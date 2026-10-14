@@ -1,0 +1,41 @@
+/* ==========================================================================
+   Adapters: restyle markup that upstream's templates emit so it matches the design, without shadowing those templates.
+   Written like the designer's file (unscoped); build-css.js scopes it. Keep it small — if an adapter grows, shadow the
+   template instead.
+   ========================================================================== */
+
+/* ---------- A. Breadcrumb ----------
+   database.html / collection.html / document.html / gridfs.html fill the navbar's {% block breadcrumb %} with Bootstrap
+   navbar items: a label link ("Database:"), a dropdown toggle (the name), a dropdown menu listing the siblings. */
+.me-crumbs > .nav-item { display: inline-flex; align-items: center; position: relative; }
+.me-crumbs > .nav-item > .nav-link {
+  display: inline-flex; align-items: center; height: 30px; padding: 0 8px;
+  font-size: var(--me-fs-2xs); font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase;
+  color: var(--me-text-muted); text-decoration: none;
+}
+.me-crumbs > .nav-item > .nav-link:hover { color: var(--me-text); text-decoration: none; }
+.me-crumbs > .nav-item > .nav-link.dropdown-toggle,
+.me-crumbs > .nav-item > .nav-link.disabled {
+  border-radius: var(--me-radius-md);
+  font-family: var(--me-font-mono); font-size: var(--me-fs-mono); font-weight: 700; letter-spacing: 0; text-transform: none;
+  color: var(--me-text);
+}
+.me-crumbs > .nav-item > .nav-link.dropdown-toggle:hover,
+.me-crumbs > .nav-item > .nav-link.dropdown-toggle[aria-expanded="true"] { background: var(--me-surface-3); }
+.me-crumbs > .nav-item > .nav-link.disabled { opacity: 1; pointer-events: none; }
+.me-crumbs .dropdown-toggle::after { margin-left: 6px; vertical-align: 0.15em; color: var(--me-text-muted); }
+
+/* ---------- B. Dropdown menus ----------
+   The designer's reset (.me-app ul { padding: 0 }) is more specific than .dropdown-menu, which upstream renders as a <ul>. */
+.me-app .dropdown-menu { padding: 6px; }
+.scrollable-ul { overflow-y: auto; max-height: 90vh; }
+
+/* ---------- C. Theme toggle ----------
+   upstream's script listens on the <i id="darkModeIcon"> itself, so a click on the button's padding does nothing.
+   Stretch the icon over the whole button instead of re-wiring the script. */
+.me-nav-end .btn-icon { position: relative; }
+.me-nav-end #darkModeIcon { position: absolute; inset: 0; display: grid; place-items: center; }
+
+/* ---------- D. Navbar background ----------
+   upstream's theme script toggles Bootstrap's bg-light / bg-dark (both !important) on #navbar. */
+#navbar.bg-light, #navbar.bg-dark { background: var(--me-surface) !important; }

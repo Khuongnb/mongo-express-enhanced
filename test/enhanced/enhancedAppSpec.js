@@ -26,6 +26,16 @@ describe('enhanced app', () => {
       expect(res.text).to.match(/<title>Home - Mongo Express<\/title>/);
     })));
 
+  it('renders pages with the shadowed layout and keeps upstream\'s hooks', () => withServer({}, (request) => request.get('/')
+    .expect(200).then((res) => {
+      expect(res.text).to.contain('<body class="me-app">');
+      expect(res.text).to.contain('id="navbar" class="me-navbar"');
+      expect(res.text).to.contain('id="darkModeIcon"');
+      expect(res.text).to.contain('id="pageTitle"');
+      expect(res.text).to.not.contain('public/css/style.css');
+      expect(res.text).to.not.contain('aria-label="Log out"');
+    })));
+
   it('serves enhanced assets', () => withServer({}, (request) => request.get('/_enhanced/assets/css/enhanced.css')
     .expect(200).expect('Content-Type', /css/)));
 
@@ -90,6 +100,15 @@ describe('enhanced app', () => {
         await request.get('/').expect(200);
         await request.get('/logout').expect(302).expect('Location', loginUrl);
         await request.get('/').expect(302).expect('Location', loginUrl);
+      }));
+
+      it('shows the logout button once signed in, but not on the sign-in page', () => withServer(options, async (request) => {
+        const signedOut = await request.get('/login').expect(200);
+        expect(signedOut.text).to.not.contain('aria-label="Log out"');
+        await request.post('/login').type('form').send(credentials('p')).expect(302);
+        const signedIn = await request.get('/').expect(200);
+        expect(signedIn.text).to.contain('href="/code-server/proxy/10081/logout"');
+        expect(signedIn.text).to.contain('aria-label="Log out"');
       }));
 
       it('keeps the health check reachable while signed out', () => withServer(options,

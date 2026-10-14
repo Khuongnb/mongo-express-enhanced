@@ -1,0 +1,99 @@
+{# SHADOW of lib/views/layout.html (UI tier 4) — drift is tracked in enhanced/shadows.json.
+   Differences from upstream, all for the redesign:
+   - body carries .me-app, which the designer's stylesheet keys on; the fluid .me-main replaces .container(-fluid)
+   - the navbar is the designed one; {% block breadcrumb %} still receives upstream's breadcrumb items unchanged
+   - alerts carry icons; the page title sits in a new {% block pageHeader %} that designed pages override
+   - public/css/style.css is not linked: the designed stylesheet (injected by the enhanced layer) supersedes it
+   - the logout button shows for form sign-in too (upstream only does for OIDC)
+   Everything else, including ME_SETTINGS and the scripts block, is upstream's. #}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <base href="{{ baseHref }}">
+  <meta charset="utf-8">
+  <title>{% block title %}Index{% endblock %} - Mongo Express</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <link rel="prefetch" href="{{ baseHref }}public/img/gears.gif">
+
+  {% block styles %}{% endblock %}
+</head>
+
+<body class="me-app">
+
+<nav id="navbar" class="me-navbar" aria-label="Main">
+  <a class="navbar-brand" href="{{ baseHref }}">
+    <span class="me-logo"><i class="fas fa-leaf" aria-hidden="true"></i></span>Mongo Express
+  </a>
+  <span class="me-nav-divider" aria-hidden="true"></span>
+  <ul class="me-crumbs" aria-label="Breadcrumb">
+    {% block breadcrumb %}
+    {% endblock %}
+  </ul>
+  <div class="me-nav-end">
+    <button type="button" class="btn btn-icon" aria-label="Switch theme"><i id="darkModeIcon" class="fa fa-moon" aria-hidden="true"></i></button>
+    {# `databases` is only set once the request is past upstream's sign-in gate, so the sign-in page gets no logout button #}
+    {% if enableLogout || (showLogout && databases) %}
+    <a href="{{ baseHref }}logout" class="btn btn-icon" aria-label="Log out"><i class="fas fa-sign-out-alt" aria-hidden="true"></i></a>
+    {% endif %}
+  </div>
+</nav>
+
+<main class="me-main">
+  {% block pageHeader %}
+  <header class="me-page-header">
+    <div class="me-title-block">
+      <h1 id="pageTitle">{{ title }}</h1>
+    </div>
+  </header>
+  {% endblock %}
+
+  {% if messageSuccess %}
+  <div class="alert alert-success alert-dismissible" role="status">
+    <i class="fas fa-check-circle" aria-hidden="true"></i>
+    <div class="me-alert-body"><strong>{{ messageSuccess }}</strong></div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Dismiss"><i class="fas fa-times" aria-hidden="true"></i></button>
+  </div>
+  {% endif %}
+
+  {% if messageError %}
+  <div class="alert alert-danger alert-dismissible" role="alert">
+    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+    <div class="me-alert-body"><strong>{{ messageError }}</strong></div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Dismiss"><i class="fas fa-times" aria-hidden="true"></i></button>
+  </div>
+  {% endif %}
+
+  {% block content %}
+  {% endblock %}
+</main>
+
+<script src="{{ baseHref }}{{assets.vendor.js}}"></script>
+<script type="text/javascript">
+
+  globalThis.ME_SETTINGS = {
+    readOnly: '{{ !!settings.read_only }}' === 'true',
+    noDelete: '{{ !!settings.no_delete }}' === 'true',
+    baseHref: '{{ baseHref }}',
+    collapsibleJSON: '{{ !!settings.me_collapsible_json }}' === 'true',
+    collapsibleJSONDefaultUnfold: Number.parseInt('{{ settings.me_collapsible_json_default_unfold || 0}}', 10),
+    confirmDelete: '{{ !!settings.me_confirm_delete }}' === 'true',
+    dbName: '{{ dbName | url_encode }}',
+    collectionName: '{{ collectionName | url_encode }}',
+    bucketName: '{{ bucketName }}',
+    limit: '{{ limit }}',
+    skip: '{{ skip }}',
+    totalPages: Math.ceil('{{ count }}' / '{{ limit }}')
+  };
+</script>
+{% block scripts %}
+{% endblock %}
+</body>
+</html>

@@ -1,1 +1,9 @@
-{ "shadows": [] }
+{
+  "shadows": [
+    {
+      "upstream": "lib/views/layout.html",
+      "shadow": "enhanced/views/layout.html",
+      "upstreamSha256": "b5e331a6cf247e957bee01b20fc3e9029cb91724abd0d8bf9163a19e85d63bb3"
+    }
+  ]
+}

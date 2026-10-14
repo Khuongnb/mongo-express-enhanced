@@ -8,6 +8,7 @@ import { ASSETS_MOUNT, resolveEnhancedConfig } from './config.js';
 import formAuthPaths from './features/formAuthPaths.js';
 import injectAssets from './features/injectAssets.js';
 import stripPrefix from './features/stripPrefix.js';
+import withTemplateOverrides from './features/templateOverrides.js';
 
 const publicDir = fileURLToPath(new URL('public', import.meta.url));
 const viewsDir = fileURLToPath(new URL('views', import.meta.url));
@@ -49,10 +50,12 @@ export default async function createEnhancedApp(config) {
     app.use(baseUrl, formAuthPaths(baseUrl));
   }
 
-  const upstream = await middleware(config);
+  const upstream = await withTemplateOverrides(() => middleware(config));
   // Enhanced templates shadow upstream's of the same name (UI tier 4, tracked in shadows.json). New enhanced templates
-  // must extend upstream's layout by relative path: swig resolves `extends` relative to the including file.
+  // may be unshadowed pages' parents too: withTemplateOverrides makes `extends`/`include` follow the same precedence.
   upstream.set('views', [viewsDir, upstream.get('views')]);
+  // Upstream only offers logout for OIDC (`res.locals.enableLogout`); form sign-in has the route but no button.
+  upstream.locals.showLogout = isFormStrategy(config) || config.useOidcAuth === true;
   app.use(baseUrl, upstream);
 
   app.use(assetsUrl, express.static(publicDir));
