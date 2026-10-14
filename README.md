@@ -1,11 +1,143 @@
-# mongo-express
+# mongo-express-enhanced
 
-[![npm version](https://badge.fury.io/js/mongo-express.svg)](https://www.npmjs.com/package/mongo-express) [![npm](https://img.shields.io/npm/dm/mongo-express.svg)](https://www.npmjs.com/package/mongo-express) [![GitHub stars](https://img.shields.io/github/stars/mongo-express/mongo-express.svg)](https://github.com/mongo-express/mongo-express/stargazers) [![Known Vulnerabilities](https://snyk.io/test/npm/name/badge.svg)](https://snyk.io/test/npm/mongo-express)
-[![Build Status](https://github.com/mongo-express/mongo-express/actions/workflows/standard-ci.yml/badge.svg?branch=master)](https://github.com/mongo-express/mongo-express/actions/workflows/standard-ci.yml)
+A fork of [mongo-express](https://github.com/mongo-express/mongo-express), the web-based MongoDB admin interface, with a redesigned
+UI and a far more capable collection filter. It is a drop-in replacement: same configuration, same features, same Docker image
+recipe, plus the improvements below.
 
-A web-based admin interface for MongoDB or compatible services (FerretDB, Amazon DocumentDB). Built with Node.js, Express, and Bootstrap 5.
+<p align="center">
+  <img src="docs/screenshots/collection.png" alt="A collection with a two-row filter applied" width="100%">
+</p>
 
-## Features
+> The sample data in every screenshot here is synthetic, served from a throwaway local MongoDB.
+
+## What is different
+
+### A multi-row filter in the Simple tab
+
+The Simple query used to be one key, one value, equality only. Anything more meant writing JSON in the Advanced tab.
+
+<img src="docs/screenshots/filter.png" alt="The filter builder with three rows" width="100%">
+
+- **Comparison operators** per row: `=`, `≠`, `>`, `≥`, `<`, `≤`.
+- **As many rows as you need** (up to 10): *Add filter* adds one, the **×** removes one. Combine them with **All** (AND) or **Any** (OR).
+- **The Type follows the Key.** Type `total` and the row switches to Number; type `placedAt` and it becomes Date. It reads the fields from
+  the documents on the page (nested paths like `info.slug` too), suggests them as you type, and falls back to String for anything it does
+  not know. Pick a Type yourself and it stops guessing for that row.
+- **A Date type** (ISO, e.g. `2026-06-01`) next to String, Number, JSON/bool, Regex, ObjectId and UUID.
+- **Copy as query** gives you the equivalent Advanced query for the filter you applied, ready to paste.
+- It is the filter everything else uses: the table, the count, the exports and *Delete all matching* all act on exactly the documents
+  you see. A filter that cannot be read stops the action instead of being ignored, so a typo can never turn "delete matching" into
+  "delete everything".
+- Filters live in the URL (`?f[0][k]=total&f[0][op]=gte&...`), so they can be bookmarked and shared. The old `key`/`value`/`type`
+  links keep working.
+
+### A redesigned interface
+
+Every page is redesigned: light and dark themes, and a layout that holds up on a phone.
+
+| | |
+| - | - |
+| <img src="docs/screenshots/collection-dark.png" alt="Dark theme" width="100%"><br><sub>Dark theme, following the system or the toggle</sub> | <img src="docs/screenshots/mobile.png" alt="Mobile layout" width="45%"><br><sub>Phone layout</sub> |
+
+### A collection table that is easier to read and work with
+
+<img src="docs/screenshots/columns.png" alt="The column picker" width="100%">
+
+- **Typed cells**: ObjectIds, dates, booleans and numbers each get their own look, and long text is truncated with the full value on hover.
+- **Column picker**: show or hide columns per collection, search them, and save sets of columns as **presets**. Your choices are remembered
+  in the browser.
+- **Sorting**: hover a column header for ascending and descending buttons; clicking the name still cycles ascending, descending, none.
+- **Copy an `_id`** with one click, jump to any page, and open a document in a new tab straight from the row.
+
+### Editing a document without leaving the table
+
+Click a row to open it in a popup, with a syntax-highlighted editor and previous/next arrows to step through the page.
+
+<img src="docs/screenshots/document-popup.png" alt="The document popup" width="100%">
+
+Saving validates on the server, so BSON helpers such as `ObjectId()` and `ISODate()` are accepted as written. The full-page editor is still
+there when you want it:
+
+<img src="docs/screenshots/document.png" alt="The full-page document editor" width="100%">
+
+### The rest of the pages
+
+| Databases | A database | GridFS bucket | Sign-in |
+| - | - | - | - |
+| <a href="docs/screenshots/home.png"><img src="docs/screenshots/home.png" alt="Databases" width="100%"></a> | <a href="docs/screenshots/database.png"><img src="docs/screenshots/database.png" alt="A database" width="100%"></a> | <a href="docs/screenshots/gridfs.png"><img src="docs/screenshots/gridfs.png" alt="A GridFS bucket" width="100%"></a> | <a href="docs/screenshots/signin.png"><img src="docs/screenshots/signin.png" alt="Sign-in" width="100%"></a> |
+
+The sign-in page (used with `ME_CONFIG_AUTH_STRATEGY=form`) tells you when a password was wrong, which stock mongo-express never shows.
+
+### Friendlier behind a reverse proxy
+
+- `ME_CONFIG_SITE_PROXY_STRIPS_BASEURL=true` for proxies that remove the base-URL prefix before forwarding to the app, such as
+  code-server's port proxy.
+- Form sign-in works under a base URL. Upstream registers `/login` and `/logout` at paths that never match once the app is mounted
+  under a prefix, so the sign-in page would 404.
+
+## Run it
+
+Needs Node.js 22 or newer for a source install. Everything in [Usage](#usage-npm--yarn--pnpm--cli) and
+[Usage (Docker)](#usage-docker) below still applies: all `ME_CONFIG_*` settings and `config.js` work unchanged.
+
+**From source**
+
+```console
+$ yarn install
+$ yarn build:enhanced     # builds the added front-end code; re-run after changing enhanced/scripts
+$ ME_CONFIG_MONGODB_URL='mongodb://localhost:27017' \
+  ME_CONFIG_BASICAUTH_ENABLED=true ME_CONFIG_BASICAUTH_USERNAME=admin ME_CONFIG_BASICAUTH_PASSWORD='change-me' \
+  ME_CONFIG_SITE_COOKIESECRET="$(openssl rand -hex 24)" ME_CONFIG_SITE_SESSIONSECRET="$(openssl rand -hex 24)" \
+  PORT=8081 yarn start:enhanced
+```
+
+It listens on `localhost` by default; set `VCAP_APP_HOST=0.0.0.0` to accept connections from other machines.
+
+**Docker** — the enhanced image is layered on top of an image built from upstream's own, unmodified `Dockerfile`, so it cannot drift from it:
+
+```console
+$ docker build -t mongo-express-upstream .
+$ docker build -f Dockerfile.enhanced --build-arg BASE_IMAGE=mongo-express-upstream -t mongo-express-enhanced .
+$ docker run -it --rm -p 8081:8081 --network some-network mongo-express-enhanced
+```
+
+Settings added by this fork (everything else is upstream's, listed further down):
+
+| Variable | Default | Description |
+| - | - | - |
+| `ME_CONFIG_SITE_PROXY_STRIPS_BASEURL` | `false` | The reverse proxy in front of the app removes `ME_CONFIG_SITE_BASEURL` before forwarding. |
+| `ME_CONFIG_ENHANCED_INJECT_ASSETS` | `true` | Inject the enhanced stylesheet and script into every page. Leave it on; it exists for debugging. |
+
+## How the fork is built
+
+The goal is that a newer upstream mongo-express can be merged at any time with little effort. So the fork is an **add-on layer**:
+
+- All new code lives in [`enhanced/`](enhanced): its own entry point (`enhanced/server.js`), middleware, templates, scripts, stylesheet and
+  build. It wraps upstream's unmodified `lib/middleware.js` rather than editing it.
+- Pages that had to change structurally are *shadows*: a same-named template in `enhanced/views/` that takes precedence. Each shadow is
+  recorded in `enhanced/shadows.json` with the hash of the upstream file it replaces, and a test fails when upstream changes that file,
+  so a shadow can never silently ignore an upstream fix.
+- The stylesheet is scoped to `[data-me-enhanced]` and the selectors the scripts depend on are checked by a contract test.
+- Upstream files are touched only where unavoidable. `grep -rn "ENHANCED:" .` lists every such spot.
+
+The tests for this layer are in `test/enhanced/` and run with the rest of the suite (`yarn test`).
+
+### Branches
+
+| Branch | Purpose |
+| - | - |
+| `master` | A pure mirror of upstream mongo-express. No fork commits; fast-forward only. |
+| `e-master` | **Production.** What gets deployed. |
+| `releases/e-vX.Y.Z` | Fork releases, cut from upstream's `master` plus our work. The `e-` prefix keeps them apart from upstream's own `releases/*`. |
+
+`package.json` still carries upstream's version number; fork releases are tracked by branch name. To take a new upstream, merge
+`upstream/master` into a new `releases/e-vX.Y.Z`, run the tests, and check the shadow and `ENHANCED:` guards.
+
+## Upstream documentation
+
+Everything below is mongo-express's own documentation and still describes how to configure this fork.
+
+### Inherited from mongo-express
 
 - Connect to multiple databases
 - View/add/delete databases
@@ -23,16 +155,6 @@ A web-based admin interface for MongoDB or compatible services (FerretDB, Amazon
 - Custom CA/TLS/SSL and CA validation disabling
 - Supports replica sets
 - OpenIdConnect Authentication
-
-## Screenshots
-
-| Home Page | Database View | Collection View | Editing A Document
-| - | - | - | -
-| <img src="http://i.imgur.com/XiYhblA.png" title="Home Page showing databases"> | <img src="http://i.imgur.com/XWcIgY1.png" title="Viewing collections & buckets in a database" /> | <img src="https://imgur.com/UmGSr3x.png" title="Viewing documents in a collection" /> | <img src="https://imgur.com/lL38abn.png" title="Editing a document" />
-
-These screenshots are from version 0.30.40
-View the album for more screenshots: (server status, database views, etc..)
-[https://imgur.com/a/9vHsF](https://imgur.com/a/9vHsF)
 
 ## Development
 
