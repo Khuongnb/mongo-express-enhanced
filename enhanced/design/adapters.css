@@ -143,3 +143,23 @@ table.tableHeaderFooterBars {
 .me-auth-caps[hidden], .me-auth-reveal[hidden] { display: none; }
 .me-auth-submit { width: 100%; justify-content: center; margin-top: var(--me-space-2); }
 @media (max-width: 767.98px) { .me-auth { padding-top: var(--me-space-5); } .me-auth-card { padding: var(--me-space-5); } }
+
+/* ---------- N. Document popup (#documentPopup in the shadowed collection.html; the designer made none) ---------- */
+.modal-xl { --bs-modal-width: 960px; }
+.me-popup-id { font-family: var(--me-font-mono); font-size: var(--me-fs-mono); font-weight: 700; color: var(--me-text-muted); word-break: break-all; }
+.me-popup-nav { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+.me-popup-nav .btn-icon:disabled { opacity: .35; cursor: default; }
+.modal-header .me-popup-nav + .btn-close { margin-left: 4px; }
+#documentPopup .me-copy { opacity: 1; flex: none; }
+.me-popup-loading { display: flex; align-items: center; gap: 10px; padding: 40px 0; justify-content: center; color: var(--me-text-muted); }
+.me-popup-editor { border-radius: var(--me-radius-md); overflow: hidden; border: 1px solid #2a2142; }
+.me-popup-editor .cm-editor { max-height: 60vh; }
+.me-popup-editor .cm-scroller { overflow: auto; }
+.me-popup-editor .cm-editor.cm-focused { outline: none; box-shadow: inset 0 0 0 2px var(--me-focus); }
+#documentPopup .modal-body > .alert { margin: 0; }
+#documentPopup .modal-footer .me-footer-note { margin-left: 0; }
+.me-popup-delete[data-armed="true"], .me-popup-delete[data-armed="true"]:hover { background: var(--me-danger); border-color: var(--me-danger); color: #fff; }
+/* the row whose document the popup shows */
+.table-documents > tbody > tr.is-open > td { background: var(--me-selected); }
+.table-documents > tbody > tr[onclick] { cursor: pointer; }
+@media (max-width: 767.98px) { #documentPopup .modal-footer { flex-wrap: wrap; } #documentPopup .me-footer-note { order: 5; width: 100%; } }

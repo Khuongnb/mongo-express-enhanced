@@ -74,7 +74,7 @@ describe('enhanced collection page (shadow of lib/views/collection.html)', () =>
   it('opens documents through real links and keeps the row handler', () => withPage({}, {}, (text, root) => {
     const row = root.querySelector('#doc-0');
     expect(row.getAttribute('onclick')).to.match(/^loadDocument\('\/db\/[^']+\/[^']+\/[^']+\?skip=0', event\)$/);
-    expect(root.querySelector('#doc-0 a[aria-label="Open document"]').getAttribute('href')).to.match(/\?skip=0$/);
+    expect(root.querySelector('#doc-0 td[data-column="_id"] a[href]').getAttribute('href')).to.match(/\?skip=0$/);
   }));
 
   it('shows a "no match" state, with a way back, when a query finds nothing', () => withPage({}, { key: 'testItem', value: '999', type: 'N' }, (text) => {
@@ -93,4 +93,40 @@ describe('enhanced collection page (shadow of lib/views/collection.html)', () =>
     expect(root.querySelector('#simple')).to.not.equal(null);
     expect(root.querySelector('#advanced')).to.not.equal(null);
   }));
+  it('opens the document page from the chain link in a new tab, safely', () => withPage({}, {}, (text, root) => {
+    for (const link of root.querySelectorAll('tbody td[data-column="_id"] a[href]')) {
+      expect(link.getAttribute('target')).to.equal('_blank');
+      expect(link.getAttribute('rel')).to.contain('noopener');
+    }
+  }));
+
+  describe('document popup', () => {
+    it('is rendered with everything the script drives, for editing', () => withPage({}, {}, (text, root) => {
+      const popup = root.querySelector('#documentPopup[data-me-popup]');
+      expect(popup).to.not.equal(null);
+      for (const part of ['id', 'copy', 'prev', 'next', 'open', 'error', 'discard', 'loading', 'editor', 'position', 'save', 'delete']) {
+        // eslint-disable-next-line unicorn/require-css-escape -- fixed names from the list above
+        expect(popup.querySelector(`[data-me-popup-${part}]`), part).to.not.equal(null);
+      }
+      expect(popup.querySelector('#popupDocument')).to.not.equal(null);
+      expect(popup.querySelector('[data-me-popup-open]').getAttribute('target')).to.equal('_blank');
+    }));
+
+    it('does not reuse an id the add-document modal or upstream scripts own', () => withPage({}, {}, (text) => {
+      expect(text.match(/id="document"/g)).to.have.length(1);
+    }));
+
+    it('has no Save in read-only mode, and the textarea is read-only', () => withPage({ options: { readOnly: true } }, {}, (text, root) => {
+      const popup = root.querySelector('#documentPopup');
+      expect(popup.querySelector('[data-me-popup-save]')).to.equal(null);
+      expect(popup.querySelector('[data-me-popup-delete]')).to.equal(null);
+      expect(popup.querySelector('#popupDocument').hasAttribute('readonly')).to.equal(true);
+    }));
+
+    it('has no Delete when deleting is not permitted, but keeps Save', () => withPage({ options: { noDelete: true } }, {}, (text, root) => {
+      const popup = root.querySelector('#documentPopup');
+      expect(popup.querySelector('[data-me-popup-delete]')).to.equal(null);
+      expect(popup.querySelector('[data-me-popup-save]')).to.not.equal(null);
+    }));
+  });
 });

@@ -18,7 +18,10 @@ export default {
   },
   output: {
     filename: `[name]${isProd ? '-[chunkhash].min' : ''}.js`,
+    chunkFilename: `[name]${isProd ? '-[chunkhash].min' : ''}.js`,
     path: outputPath,
+    // Upstream's bundles register lazy chunks on a global named after package.json; sharing it would hand our chunks to their runtime.
+    chunkLoadingGlobal: 'webpackChunkMongoExpressEnhanced',
     publicPath: '', // keep manifest entries as bare filenames; the app serves the directory itself
   },
   module: {

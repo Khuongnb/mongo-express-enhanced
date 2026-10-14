@@ -7,6 +7,8 @@
      same class name, so adapters.css neutralises it on the table
    - `.deleteButtonDocument` sits on the delete <button>, `.deleteButtonCollection` stays a direct child of its <form>
    - every <td> carries data-column, which the column picker (enhanced/scripts) uses to hide columns by name
+   - the row's chain link opens the document page in a NEW TAB; clicking a row opens #documentPopup instead of navigating
+     (enhanced/scripts/documentPopup.js replaces upstream's `loadDocument`, which navigated)
    Behaviour changes: the Rename button submits the form (upstream's is type="button", so only Enter worked); the collection
    delete prompt asks for the collection name, which is what the script checks (upstream's label said "database name"). #}
 {% extends 'layout.html' %}
@@ -308,11 +310,11 @@
               <div class="tableContent{% if column === '_id' %} me-id-cell{% endif %}">
                 {% if column === '_id' %}
                 {% if document._id._bsontype == 'Binary' %}
-                <a class="btn btn-icon btn-xs" href="{{ collectionUrl }}/{{ document._id | json | safe | url_encode }}?subtype={{ document._id.sub_type }}&skip={{skip}}" onclick="event.stopPropagation()" aria-label="Open document"><i class="fas fa-link" aria-hidden="true"></i></a>
+                <a class="btn btn-icon btn-xs" href="{{ collectionUrl }}/{{ document._id | json | safe | url_encode }}?subtype={{ document._id.sub_type }}&skip={{skip}}" target="_blank" rel="noopener" onclick="event.stopPropagation()" aria-label="Open document in a new tab" title="Open in a new tab"><i class="fas fa-link" aria-hidden="true"></i></a>
                 {% elseif document._id._bsontype == 'Long' %}
-                <a class="btn btn-icon btn-xs" href="{{ collectionUrl }}/{{ document._id | longToString | safe | url_encode }}?skip={{skip}}" onclick="event.stopPropagation()" aria-label="Open document"><i class="fas fa-link" aria-hidden="true"></i></a>
+                <a class="btn btn-icon btn-xs" href="{{ collectionUrl }}/{{ document._id | longToString | safe | url_encode }}?skip={{skip}}" target="_blank" rel="noopener" onclick="event.stopPropagation()" aria-label="Open document in a new tab" title="Open in a new tab"><i class="fas fa-link" aria-hidden="true"></i></a>
                 {% else %}
-                <a class="btn btn-icon btn-xs" href="{{ collectionUrl }}/{{ document._id | json | safe | url_encode }}?skip={{skip}}" onclick="event.stopPropagation()" aria-label="Open document"><i class="fas fa-link" aria-hidden="true"></i></a>
+                <a class="btn btn-icon btn-xs" href="{{ collectionUrl }}/{{ document._id | json | safe | url_encode }}?skip={{skip}}" target="_blank" rel="noopener" onclick="event.stopPropagation()" aria-label="Open document in a new tab" title="Open in a new tab"><i class="fas fa-link" aria-hidden="true"></i></a>
                 {% endif %}
                 {% if !settings.read_only && !settings.no_delete && collectionName !== 'system.indexes' %}
                 <form class="me-inline-form" method="POST"
@@ -545,6 +547,53 @@
   </div>
 </div>
 {% endif %}
+
+{# Quick view of one document, opened by clicking a row (enhanced/scripts/documentPopup.js). It loads the document's own page
+   and edits through the same routes, so nothing here is a second implementation. #}
+<div class="modal fade" id="documentPopup" tabindex="-1" aria-hidden="true" aria-labelledby="docPopupTitle" data-me-popup>
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="me-modal-icon is-neutral"><i class="fas fa-file-alt" aria-hidden="true"></i></span>
+        <h2 class="modal-title" id="docPopupTitle">
+          <span>Document</span>
+          <span class="me-popup-id" data-me-popup-id></span>
+        </h2>
+        <button type="button" class="me-copy is-visible" data-me-popup-copy aria-label="Copy _id"><i class="far fa-copy" aria-hidden="true"></i></button>
+        <div class="me-popup-nav">
+          <button type="button" class="btn btn-icon" data-me-popup-prev aria-label="Previous document" title="Previous document"><i class="fas fa-chevron-up" aria-hidden="true"></i></button>
+          <button type="button" class="btn btn-icon" data-me-popup-next aria-label="Next document" title="Next document"><i class="fas fa-chevron-down" aria-hidden="true"></i></button>
+          <a class="btn btn-icon" data-me-popup-open href="#" target="_blank" rel="noopener" aria-label="Open in a new tab" title="Open in a new tab"><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger" role="alert" data-me-popup-error hidden>
+          <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+          <div class="me-alert-body"><strong data-me-popup-error-text></strong></div>
+        </div>
+        <div class="alert alert-warning" role="status" data-me-popup-discard hidden>
+          <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+          <div class="me-alert-body"><strong>This document has unsaved changes.</strong> Close again to discard them.</div>
+        </div>
+        <div class="me-popup-loading" data-me-popup-loading><i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i>Loading document…</div>
+        <div class="me-popup-editor" data-me-popup-editor hidden>
+          <textarea id="popupDocument" aria-label="Document"{% if settings.read_only %} readonly="readonly"{% endif %}></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        {% if !settings.read_only && !settings.no_delete %}
+        <button type="button" class="btn btn-outline-danger me-popup-delete" data-me-popup-delete><i class="fas fa-trash-alt" aria-hidden="true"></i><span>Delete</span></button>
+        {% endif %}
+        <span class="me-footer-note" data-me-popup-position></span>
+        <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Close</button>
+        {% if !settings.read_only %}
+        <button type="button" class="btn btn-primary" data-me-popup-save disabled><i class="fas fa-save" aria-hidden="true"></i>Save</button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 

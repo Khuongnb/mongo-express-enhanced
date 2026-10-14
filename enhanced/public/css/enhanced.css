@@ -1246,3 +1246,23 @@
 [data-me-enhanced] .me-auth-caps[hidden], [data-me-enhanced] .me-auth-reveal[hidden] { display: none; }
 [data-me-enhanced] .me-auth-submit { width: 100%; justify-content: center; margin-top: var(--me-space-2); }
 @media (max-width: 767.98px) { [data-me-enhanced] .me-auth { padding-top: var(--me-space-5); } [data-me-enhanced] .me-auth-card { padding: var(--me-space-5); } }
+
+/* ---------- N. Document popup (#documentPopup in the shadowed collection.html; the designer made none) ---------- */
+[data-me-enhanced] .modal-xl { --bs-modal-width: 960px; }
+[data-me-enhanced] .me-popup-id { font-family: var(--me-font-mono); font-size: var(--me-fs-mono); font-weight: 700; color: var(--me-text-muted); word-break: break-all; }
+[data-me-enhanced] .me-popup-nav { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+[data-me-enhanced] .me-popup-nav .btn-icon:disabled { opacity: .35; cursor: default; }
+[data-me-enhanced] .modal-header .me-popup-nav + .btn-close { margin-left: 4px; }
+[data-me-enhanced] #documentPopup .me-copy { opacity: 1; flex: none; }
+[data-me-enhanced] .me-popup-loading { display: flex; align-items: center; gap: 10px; padding: 40px 0; justify-content: center; color: var(--me-text-muted); }
+[data-me-enhanced] .me-popup-editor { border-radius: var(--me-radius-md); overflow: hidden; border: 1px solid #2a2142; }
+[data-me-enhanced] .me-popup-editor .cm-editor { max-height: 60vh; }
+[data-me-enhanced] .me-popup-editor .cm-scroller { overflow: auto; }
+[data-me-enhanced] .me-popup-editor .cm-editor.cm-focused { outline: none; box-shadow: inset 0 0 0 2px var(--me-focus); }
+[data-me-enhanced] #documentPopup .modal-body > .alert { margin: 0; }
+[data-me-enhanced] #documentPopup .modal-footer .me-footer-note { margin-left: 0; }
+[data-me-enhanced] .me-popup-delete[data-armed="true"], [data-me-enhanced] .me-popup-delete[data-armed="true"]:hover { background: var(--me-danger); border-color: var(--me-danger); color: #fff; }
+/* the row whose document the popup shows */
+[data-me-enhanced] .table-documents > tbody > tr.is-open > td { background: var(--me-selected); }
+[data-me-enhanced] .table-documents > tbody > tr[onclick] { cursor: pointer; }
+@media (max-width: 767.98px) { [data-me-enhanced] #documentPopup .modal-footer { flex-wrap: wrap; } [data-me-enhanced] #documentPopup .me-footer-note { order: 5; width: 100%; } }
