@@ -98,8 +98,15 @@ It listens on `localhost` by default; set `VCAP_APP_HOST=0.0.0.0` to accept conn
 ```console
 $ docker build -t mongo-express-upstream .
 $ docker build -f Dockerfile.enhanced --build-arg BASE_IMAGE=mongo-express-upstream -t mongo-express-enhanced .
-$ docker run -it --rm -p 8081:8081 --network some-network mongo-express-enhanced
+$ docker run -it --rm -p 8081:8081 --network some-network \
+    -e ME_CONFIG_MONGODB_URL='mongodb://mongo:27017' \
+    -e ME_CONFIG_BASICAUTH_ENABLED=true -e ME_CONFIG_BASICAUTH_USERNAME=admin -e ME_CONFIG_BASICAUTH_PASSWORD='change-me' \
+    mongo-express-enhanced
 ```
+
+**Turn sign-in on.** Like upstream, the image has *no* login unless `ME_CONFIG_BASICAUTH_ENABLED=true` is set, and it manages every database on
+the server it connects to. Do not expose it without a login. Session secrets are generated at start-up if you do not set
+`ME_CONFIG_SITE_COOKIESECRET` and `ME_CONFIG_SITE_SESSIONSECRET`; set them if you want sessions to survive a restart.
 
 Settings added by this fork (everything else is upstream's, listed further down):
 
