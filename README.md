@@ -171,7 +171,6 @@ You can use the following [environment variables](https://docs.docker.com/refere
 | `ME_CONFIG_MONGODB_URL_FILE`                   | ``                                                  | File version of ME_CONFIG_MONGODB_URL
 | `ME_CONFIG_MONGODB_AWS_DOCUMENTDB`             | `false`                                             | This allow AWS DocumentDB compatibility (experimental)
 | `ME_CONFIG_SITE_BASEURL`                       | `/`                                                 | Set the express baseUrl to ease mounting at a subdirectory. Remember to include leading and trailing slash.
-| `ME_CONFIG_SITE_PROXY_STRIPS_BASEURL`          | `false`                                             | Set `true` when a reverse proxy strips the `ME_CONFIG_SITE_BASEURL` prefix before forwarding. The prefix is re-added to incoming paths that lack it, so routes and generated links stay consistent.
 | `ME_CONFIG_HEALTH_CHECK_PATH`                  | `/status`                                           | Set the mongo express healthcheck path. Remember to add the forward slash at the start.
 | `ME_CONFIG_SITE_COOKIESECRET`                  | ``                                                  | String used by [cookie-parser middleware](https://www.npmjs.com/package/cookie-parser) to sign cookies.
 | `ME_CONFIG_SITE_SESSIONSECRET`                 | ``                                                  | String used to sign the session ID cookie by [express-session middleware](https://www.npmjs.com/package/express-session).

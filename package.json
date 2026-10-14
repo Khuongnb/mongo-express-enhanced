@@ -117,6 +117,8 @@
   "scripts": {
     "lint": "eslint .",
     "start": "cross-env NODE_ENV=production node app.js",
+    "start:enhanced": "cross-env NODE_ENV=production node enhanced/server.js",
+    "build:enhanced": "cross-env NODE_ENV=production webpack --config webpack.enhanced.config.mjs",
     "start-dev": "concurrently --kill-others \"nodemon app.js --watch lib\" \"webpack --watch\"",
     "build-dev": "webpack --watch",
     "build": "cross-env NODE_ENV=production webpack",

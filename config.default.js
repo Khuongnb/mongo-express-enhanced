@@ -112,10 +112,6 @@ export default {
   site: {
     // baseUrl: the URL that mongo express will be located at - Remember to add the forward slash at the start and end!
     baseUrl: process.env.ME_CONFIG_SITE_BASEURL || '/',
-    // proxyStripsBaseUrl: set when a reverse proxy removes the baseUrl prefix before forwarding (so the app
-    // receives "/" while the browser sees baseUrl). Incoming paths missing the prefix get it re-added, so routes
-    // and generated links/redirects keep using baseUrl. Requests that already carry the prefix are untouched.
-    proxyStripsBaseUrl: getBoolean(process.env.ME_CONFIG_SITE_PROXY_STRIPS_BASEURL, false),
     cookieKeyName: 'mongo-express',
     cookieSecret: process.env.ME_CONFIG_SITE_COOKIESECRET,
     host: process.env.VCAP_APP_HOST || 'localhost',

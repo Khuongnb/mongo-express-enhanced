@@ -1,0 +1,4 @@
+/*
+ * Enhanced look and feel (UI tier 1). Loaded after upstream's CSS and injected by enhanced/features/injectAssets.js.
+ * Scope every rule to [data-me-enhanced]; prefer overriding Bootstrap 5 --bs-* variables over restyling structure.
+ */

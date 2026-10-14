@@ -67,18 +67,6 @@ async function bootstrap(config) {
     }
   }
 
-  if (config.site.proxyStripsBaseUrl && config.site.baseUrl !== '/') {
-    const prefix = config.site.baseUrl.replace(/\/$/, '');
-    app.use((req, res, next) => {
-      if (req.url !== prefix && !req.url.startsWith(`${prefix}/`) && !req.url.startsWith(`${prefix}?`)) {
-        req.url = `${prefix}${req.url}`;
-        // baseHref and the auth allowlist are derived from originalUrl, so it must carry the prefix too
-        req.originalUrl = `${prefix}${req.originalUrl}`;
-      }
-      next();
-    });
-  }
-
   const resolvedMiddleware = await middleware(config);
   app.use(config.site.baseUrl, resolvedMiddleware);
   app.use(config.site.baseUrl, csrf(process.env.NODE_ENV === 'test'

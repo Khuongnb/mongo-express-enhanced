@@ -17,6 +17,7 @@ export default [
     ignores: [
       'node_modules/**',
       'build/**',
+      'enhanced/build/**', // ENHANCED: output of webpack.enhanced.config.mjs
       'lib/views/**',
       'instrumented/**',
       'coverage/**',

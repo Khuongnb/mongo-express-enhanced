@@ -1,0 +1,16 @@
+# Layers the enhanced add-on over an image built from upstream's own, unmodified Dockerfile, so upstream's
+# image recipe is never copied here and cannot drift:
+#   docker build -t mongo-express-upstream .
+#   docker build -f Dockerfile.enhanced --build-arg BASE_IMAGE=mongo-express-upstream -t mongo-express-enhanced .
+ARG BASE_IMAGE=mongo-express-upstream
+
+# The base image only has production dependencies, so the enhanced bundle is built separately with the full set.
+FROM node:24-alpine3.24 AS enhanced-build
+WORKDIR /dockerbuild
+COPY . .
+RUN yarn install && yarn build:enhanced
+
+FROM ${BASE_IMAGE}
+COPY --from=enhanced-build /dockerbuild/enhanced /opt/mongo-express/enhanced/
+# package.json (with the start:enhanced script) is already in the base image: both builds use this same checkout.
+CMD ["/sbin/tini", "--", "yarn", "start:enhanced"]
