@@ -1,0 +1,127 @@
+{# SHADOW of lib/views/gridfs.html (UI tier 4) — drift is tracked in enhanced/shadows.json.
+   The design has no page for this one: it is built from the collection design's parts, like index.html and database.html.
+   Differences from upstream, all for the redesign:
+   - page header with the file count, total size and average chunk size (upstream computes them and shows nothing), and the upload
+     form as a header action (it was a block below the table)
+   - the table is the designed one; rows still call upstream's loadFile() (a click downloads the file), and each row also has an
+     explicit Download link
+   - Delete asks for a second click (data-me-confirm-click, enhanced/scripts/gridfsPage.js); upstream deleted a file on the first
+   - the commented-out "Rename Bucket" block is dropped
+   Kept as upstream has them: the row onclick="loadFile(...)" (lib/scripts/gridfs.js), the upload form's field name `filefield` and
+   multipart encoding, the delete form's _method=delete and _csrf. #}
+{% extends 'layout.html' %}
+
+{% block title %}{{ bucketName }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="nav-item">
+  <a class="nav-link px-1" href="{{ dbUrl }}">Database:</a>
+</li>
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle px-1" href="#" role="button" aria-controls="navbarDatabaseDropdown" data-bs-target="#navbarDatabaseDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+    {{ dbName }}
+  </a>
+  <ul id="navbarDatabaseDropdown" class="dropdown-menu scrollable-ul">
+    {% for db in databases %}
+    <li><a class="dropdown-item" href="{{ baseHref }}db/{{ db | url_encode }}/">{{ db }}</a></li>
+    {% endfor %}
+  </ul>
+</li>
+<li class="nav-item">
+  <a class="nav-link px-1" href="{{ dbUrl }}/{{ bucketName }}">Bucket:</a>
+</li>
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle px-1" href="#" role="button" aria-controls="navbarBucketDropdown" data-bs-target="#navbarBucketDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+    {{ bucketName }}
+  </a>
+  <ul id="navbarBucketDropdown" class="dropdown-menu scrollable-ul">
+    {% for bucket in buckets %}
+    <li><a class="dropdown-item" href="{{ dbUrl }}/gridFS/{{ bucket }}">{{ bucket }}</a></li>
+    {% endfor %}
+  </ul>
+</li>
+{% endblock %}
+
+{% block pageHeader %}
+<header class="me-page-header">
+  <div class="me-title-block">
+    <span class="me-eyebrow">GridFS bucket</span>
+    <h1 id="pageTitle"><span class="me-title-db">{{ dbName }}.</span>{{ bucketName }}</h1>
+    <div class="me-meta">
+      <span><i class="fas fa-file" aria-hidden="true"></i><strong data-me-num>{{ files.length }}</strong> files</span>
+      {% if files.length %}
+      <span><i class="fas fa-hdd" aria-hidden="true"></i><strong>{{ stats.totalSize }}</strong> total</span>
+      <span><i class="fas fa-cubes" aria-hidden="true"></i><strong>{{ stats.avgChunk }}</strong> average chunk</span>
+      {% endif %}
+    </div>
+  </div>
+  {% if !settings.read_only %}
+  <div class="me-page-actions">
+    <form class="me-create" method="POST" action="{{ dbUrl }}/gridFS/{{ bucketName }}/" enctype="multipart/form-data">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="input-group">
+        <input type="file" class="form-control" name="filefield" aria-label="File to upload" required>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-upload" aria-hidden="true"></i>Upload</button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+</header>
+{% endblock %}
+
+{% block content %}
+<section class="card me-docs-card" aria-labelledby="filesTitle">
+  <div class="card-header">
+    <h2 class="card-title" id="filesTitle"><i class="fas fa-file-archive" aria-hidden="true"></i>Files</h2>
+  </div>
+  {% if files.length == 0 %}
+  <div class="me-empty">
+    <div class="me-empty-art"><i class="fas fa-inbox" aria-hidden="true"></i></div>
+    <h3>No files in this bucket</h3>
+    <p>{% if !settings.read_only %}Upload one with the form above.{% else %}Nothing has been stored here yet.{% endif %}</p>
+  </div>
+  {% else %}
+  <div class="tableWrapper">
+    <div class="me-table-scroll">
+      <table class="table table-striped table-hover me-files-table">
+        <thead>
+          <tr>
+            {% for column in columns %}
+            <th scope="col"><div class="me-th"><span class="me-th-name">{{ column }}</span></div></th>
+            {% endfor %}
+            <th scope="col"><div class="me-th"><span class="me-th-name">Actions</span></div></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in files %}
+          <tr onclick="loadFile('{{ file._id | json | safe | url_encode }}')">
+            {% for column in columns %}
+            <td data-column="{{ column }}">
+              <div class="tableContent">{{ file[column] | me_value | safe }}</div>
+            </td>
+            {% endfor %}
+            <td class="me-actions-cell">
+              <div class="tableContent me-id-cell">
+                <a class="btn btn-icon btn-xs" href="{{ dbUrl }}/gridFS/{{ bucketName }}/{{ file._id | json | safe | url_encode }}" onclick="event.stopPropagation()" aria-label="Download file" title="Download"><i class="fas fa-download" aria-hidden="true"></i></a>
+                {% if !settings.read_only && !settings.no_delete %}
+                <form class="me-inline-form" method="POST" action="{{ dbUrl }}/gridFS/{{ bucketName }}/{{ file._id | json | safe | url_encode }}">
+                  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+                  <input type="hidden" name="_method" value="delete">
+                  <button type="submit" class="btn btn-icon btn-xs btn-icon-danger" data-me-confirm-click aria-label="Delete file" title="Delete"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ baseHref }}{{ assets.gridfs.js }}"></script>
+{% endblock %}

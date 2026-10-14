@@ -178,3 +178,21 @@ table.tableHeaderFooterBars {
 th:hover .me-sort-pair, th:focus-within .me-sort-pair { display: inline-flex; }
 th:hover .me-sort-slot .sort-icon, th:focus-within .me-sort-slot .sort-icon { display: none; }
 @media (hover: none) { .me-sort-pair { display: inline-flex; } .me-sort-slot .sort-icon { display: none; } }
+
+/* ---------- P. GridFS bucket page (shadowed gridfs.html) ---------- */
+.me-files-table > tbody > tr { cursor: pointer; }
+.me-files-table .me-actions-cell { width: 1%; white-space: nowrap; }
+.me-files-table .me-id-cell { gap: 4px; }
+.me-create .form-control[type="file"] {
+  width: 280px; max-width: 100%; height: var(--me-control-h, 36px); padding: 0 10px 0 0; line-height: var(--me-control-h, 36px);
+  color: var(--me-text-muted); font-size: var(--me-fs-md);
+}
+.me-create .form-control[type="file"]::file-selector-button {
+  height: 100%; margin: 0 10px 0 0; padding: 0 12px; border: 0; border-right: 1px solid var(--me-border-field);
+  background: var(--me-surface-2); color: var(--me-text); font-family: var(--me-font-ui); font-size: var(--me-fs-sm); font-weight: 600; cursor: pointer;
+}
+.me-files-table .me-th { padding-left: 6px; }
+/* a destructive icon button waiting for its second click */
+.me-app .btn-icon[data-armed="true"], .me-app .btn-icon[data-armed="true"]:hover {
+  width: auto; padding: 0 8px; background: var(--me-danger) !important; color: #fff !important; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+}

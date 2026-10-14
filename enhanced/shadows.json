@@ -29,6 +29,11 @@
       "upstream": "lib/views/signin.html",
       "shadow": "enhanced/views/signin.html",
       "upstreamSha256": "2d7932c74915d5f2afa7e96eaa9b2e867974c26802fb6def194764d5e3832caf"
+    },
+    {
+      "upstream": "lib/views/gridfs.html",
+      "shadow": "enhanced/views/gridfs.html",
+      "upstreamSha256": "3eb339701dfc916d86f5c2d3b562340e652c69c5e89755bd5999829d0a80ca47"
     }
   ]
 }

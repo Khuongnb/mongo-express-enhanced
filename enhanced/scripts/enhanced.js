@@ -4,6 +4,7 @@
 import initColumnPicker from './columnPicker.js';
 import { initDocumentSave } from './documentPage.js';
 import { initDocumentPopup } from './documentPopup.js';
+import { initConfirmClick } from './gridfsPage.js';
 import { initListFilter } from './listFilter.js';
 import { initSigninPage } from './signinPage.js';
 import { initSortControls } from './sortControls.js';
@@ -29,6 +30,7 @@ ready(() => {
   initSigninPage();
   initDocumentPopup();
   initSortControls();
+  initConfirmClick();
   initRanges();
   initCopy();
   initQueryUi();
