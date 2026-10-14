@@ -1266,3 +1266,18 @@
 [data-me-enhanced] .table-documents > tbody > tr.is-open > td { background: var(--me-selected); }
 [data-me-enhanced] .table-documents > tbody > tr[onclick] { cursor: pointer; }
 @media (max-width: 767.98px) { [data-me-enhanced] #documentPopup .modal-footer { flex-wrap: wrap; } [data-me-enhanced] #documentPopup .me-footer-note { order: 5; width: 100%; } }
+
+/* ---------- O. Ascending / descending buttons in column headers ----------
+   The state icon sits in a fixed-width slot so swapping it for the two buttons never moves the header. */
+[data-me-enhanced] .me-sort-slot { position: relative; flex: none; width: 34px; height: 26px; display: inline-flex; align-items: center; justify-content: center; }
+[data-me-enhanced] .me-sort-slot .sort-icon { margin-left: 0; }
+[data-me-enhanced] .me-sort-pair { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; gap: 2px; }
+[data-me-enhanced] .me-sort-btn {
+  width: 16px; height: 22px; padding: 0; border: 0; border-radius: 4px; background: none; cursor: pointer;
+  display: inline-grid; place-items: center; font-size: 12px; color: var(--me-text-faint);
+}
+[data-me-enhanced] .me-sort-btn:hover { background: var(--me-surface-3); color: var(--me-text); }
+[data-me-enhanced] .me-sort-btn[aria-pressed="true"] { color: var(--me-accent); background: var(--me-selected); }
+[data-me-enhanced] th:hover .me-sort-pair, [data-me-enhanced] th:focus-within .me-sort-pair { display: inline-flex; }
+[data-me-enhanced] th:hover .me-sort-slot .sort-icon, [data-me-enhanced] th:focus-within .me-sort-slot .sort-icon { display: none; }
+@media (hover: none) { [data-me-enhanced] .me-sort-pair { display: inline-flex; } [data-me-enhanced] .me-sort-slot .sort-icon { display: none; } }

@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/dom-node-dataset -- node-html-parser elements have no dataset */
 /* eslint-disable unicorn/prefer-scoped-selector -- node-html-parser's document root has no :scope */
 import fs from 'node:fs';
 import { expect } from 'chai';
@@ -56,13 +57,23 @@ describe('enhanced collection page (shadow of lib/views/collection.html)', () =>
 
   it('puts sort data on the sort button and column names on every cell', () => withPage({}, { sort: { testItem: '1' } }, (text, root) => {
     const button = root.querySelector('.sorting-button[data-column="testItem"]');
-    // eslint-disable-next-line unicorn/dom-node-dataset -- node-html-parser has no dataset
     expect(button.getAttribute('data-direction')).to.equal('1');
     expect(root.querySelector('th[data-column="testItem"]').getAttribute('aria-sort')).to.equal('ascending');
     expect(root.querySelectorAll('tbody td[data-column="testItem"]')).to.have.length(4);
     expect(root.querySelector('[data-me-sort-chip="testItem"]')).to.not.equal(null);
     // the hidden sort inputs the forms submit are still there
     expect(root.querySelector('input.sort-testItem').getAttribute('value')).to.equal('1');
+  }));
+
+  it('offers ascending and descending buttons per column, reflecting the current sort', () => withPage({}, { sort: { testItem: '-1' } }, (text, root) => {
+    const buttons = root.querySelectorAll('th[data-column="testItem"] .me-sort-pair button');
+    expect(buttons.map((button) => button.getAttribute('data-me-sort'))).to.deep.equal(['1', '-1']);
+    expect(buttons.map((button) => button.getAttribute('aria-pressed'))).to.deep.equal(['false', 'true']);
+    expect(buttons.map((button) => button.getAttribute('data-me-sort-column'))).to.deep.equal(['testItem', 'testItem']);
+    // not data-column: the column picker hides everything carrying that attribute
+    expect(buttons.every((button) => button.getAttribute('data-column') === undefined)).to.equal(true);
+    // a button must not sit inside another button
+    expect(root.querySelector('.sorting-button button')).to.equal(null);
   }));
 
   it('renders typed values with the designed classes', () => withPage({}, {}, (text, root) => {

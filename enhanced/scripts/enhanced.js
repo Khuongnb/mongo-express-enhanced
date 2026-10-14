@@ -6,6 +6,7 @@ import { initDocumentSave } from './documentPage.js';
 import { initDocumentPopup } from './documentPopup.js';
 import { initListFilter } from './listFilter.js';
 import { initSigninPage } from './signinPage.js';
+import { initSortControls } from './sortControls.js';
 import {
   initCopy, initDeleteCollectionGate, initNumbers, initPagination, initQueryUi, initRanges,
 } from './tablePage.js';
@@ -27,6 +28,7 @@ ready(() => {
   initDocumentSave();
   initSigninPage();
   initDocumentPopup();
+  initSortControls();
   initRanges();
   initCopy();
   initQueryUi();

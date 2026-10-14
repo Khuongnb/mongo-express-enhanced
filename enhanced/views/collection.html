@@ -9,6 +9,8 @@
    - every <td> carries data-column, which the column picker (enhanced/scripts) uses to hide columns by name
    - the row's chain link opens the document page in a NEW TAB; clicking a row opens #documentPopup instead of navigating
      (enhanced/scripts/documentPopup.js replaces upstream's `loadDocument`, which navigated)
+   - the sort icon is no longer inside `.sorting-button`: on hover/focus it becomes an ascending and a descending button
+     (`.me-sort-pair`, enhanced/scripts/sortControls.js); clicking the column name still cycles asc → desc → none like upstream
    Behaviour changes: the Rename button submits the form (upstream's is type="button", so only Enter worked); the collection
    delete prompt asks for the collection name, which is what the script checks (upstream's label said "database name"). #}
 {% extends 'layout.html' %}
@@ -280,6 +282,9 @@
                 <span class="column-drag-handle" draggable="true" title="Drag to reorder column"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>
                 <button type="button" class="sorting-button" data-column="{{column}}" data-direction="{{sort[column]}}" title="Sort by {{column}}">
                   <span class="me-th-name">{{column}}</span>
+                </button>
+                {# the state icon shows at rest; on hover or focus the two buttons replace it (enhanced/scripts/sortControls.js) #}
+                <span class="me-sort-slot">
                   {% if sort[column] == 1 %}
                   <i class="fas fa-sort-up sort-icon active" aria-hidden="true"></i>
                   {% elseif sort[column] == -1 %}
@@ -287,7 +292,11 @@
                   {% else %}
                   <i class="fas fa-sort sort-icon" aria-hidden="true"></i>
                   {% endif %}
-                </button>
+                  <span class="me-sort-pair" role="group" aria-label="Sort {{column}}">
+                    <button type="button" class="me-sort-btn" data-me-sort="1" data-me-sort-column="{{column}}" aria-label="Sort {{column}} ascending" aria-pressed="{% if sort[column] == 1 %}true{% else %}false{% endif %}" title="Ascending"><i class="fas fa-caret-up" aria-hidden="true"></i></button>
+                    <button type="button" class="me-sort-btn" data-me-sort="-1" data-me-sort-column="{{column}}" aria-label="Sort {{column}} descending" aria-pressed="{% if sort[column] == -1 %}true{% else %}false{% endif %}" title="Descending"><i class="fas fa-caret-down" aria-hidden="true"></i></button>
+                  </span>
+                </span>
               </div>
             </th>
             {% endfor %}
