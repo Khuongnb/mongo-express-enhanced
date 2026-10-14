@@ -115,6 +115,16 @@ describe('enhanced app', () => {
         (request) => request.get('/status').expect(200)));
     });
 
+    it('serves the enhanced assets to signed-out visitors, which the sign-in page needs', () => withServer(
+      { auth, authStrategy: 'form' },
+      async (request) => {
+        await request.get('/_enhanced/assets/css/enhanced.css').expect(200).expect('Content-Type', /css/);
+        const login = await request.get('/login').expect(200);
+        expect(login.text).to.contain('/_enhanced/assets/css/enhanced.css');
+        await request.get('/').expect(302);
+      },
+    ));
+
     it('still works at the root base URL, where no rewrite is needed', () => withServer(
       { auth, authStrategy: 'form' },
       async (request) => {

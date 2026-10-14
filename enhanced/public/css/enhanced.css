@@ -1142,3 +1142,43 @@
 /* ---------- D. Navbar background ----------
    upstream's theme script toggles Bootstrap's bg-light / bg-dark (both !important) on #navbar. */
 [data-me-enhanced] #navbar.bg-light, [data-me-enhanced] #navbar.bg-dark { background: var(--me-surface) !important; }
+
+/* ---------- E. [hidden] ----------
+   The designer's components set `display` explicitly, which beats the browser's [hidden] rule. */
+[data-me-enhanced] .me-app [hidden] { display: none !important; }
+
+/* ---------- F. Collection table: one class name, two meanings ----------
+   upstream's script selects the TABLE by `.tableHeaderFooterBars`; the designer reused that name for the toolbars above and
+   below it. The shadowed template keeps the class on the table (so the script works) and this undoes the toolbar look there. */
+[data-me-enhanced] table.tableHeaderFooterBars {
+  display: table; gap: 0; padding: 0; background: var(--bs-table-bg); border-bottom: 0;
+}
+/* upstream's script prepends its own drag handle to each header cell; the design's handle is the one inside .me-th */
+[data-me-enhanced] .table-documents > thead > tr > th > i.column-drag-handle { display: none; }
+[data-me-enhanced] .me-th .column-drag-handle { cursor: grab; }
+
+/* ---------- G. Wrappers the shadowed collection template adds ---------- */
+[data-me-enhanced] .me-inline-form { display: inline-flex; margin: 0; }
+[data-me-enhanced] .me-tile-form { display: contents; }   /* the tile button stays a direct child of its <form>, which upstream's script needs */
+[data-me-enhanced] .me-chip .me-chip-text {
+  display: inline-block; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom;
+}
+/* the Tools card's hidden file input must not become a grid cell */
+[data-me-enhanced] .me-tiles > input[type="file"] { display: none; }
+
+/* ---------- H. Column picker panel ----------
+   The design builds the panel on .dropdown-menu. Bootstrap's delegated dropdown key handler matches that class and throws
+   when it finds no data-bs-toggle button (arrow keys, Escape), so the panel does not carry it; these are the base rules it
+   would have given. The panel-specific rules (width, flex layout, .show) are the designer's own .me-picker ones. */
+[data-me-enhanced] .me-picker {
+  position: absolute; z-index: 1050; top: calc(100% + 6px); left: 0; min-width: 220px;
+  background: var(--me-surface); border: 1px solid var(--me-border); border-radius: var(--me-radius-md); box-shadow: var(--me-shadow-lg);
+}
+/* the card clips its children (rounded corners); an open picker is taller than a short table and must not be cut off */
+[data-me-enhanced] .me-docs-card:has(.me-picker.show) { overflow: visible; }
+
+/* ---------- I. Links that are buttons ----------
+   The designer's `.me-app a` colour is more specific than a button's own, so upstream's <a class="btn btn-success"> (database
+   list, tools) got purple text on a green ground. Buttons keep their own colours. */
+[data-me-enhanced] .me-app a.btn, [data-me-enhanced] .me-app a.btn:hover { color: var(--bs-btn-color); text-decoration: none; }
+[data-me-enhanced] .me-app a.btn:hover { color: var(--bs-btn-hover-color, var(--bs-btn-color)); }

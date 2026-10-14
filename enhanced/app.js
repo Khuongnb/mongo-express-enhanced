@@ -8,6 +8,7 @@ import { ASSETS_MOUNT, resolveEnhancedConfig } from './config.js';
 import formAuthPaths from './features/formAuthPaths.js';
 import injectAssets from './features/injectAssets.js';
 import stripPrefix from './features/stripPrefix.js';
+import { registerValueFilters } from './features/valueFilter.js';
 import withTemplateOverrides from './features/templateOverrides.js';
 
 const publicDir = fileURLToPath(new URL('public', import.meta.url));
@@ -30,6 +31,7 @@ const readManifest = () => {
  *   1. pre-middleware (before upstream sees the request)
  *   2. upstream middleware, which also applies its auth
  *   3. enhanced routes/assets — only reached for paths upstream does not handle, i.e. after upstream's auth
+ *      (form sign-in is the exception: its page needs the stylesheet, so assets are served before upstream)
  *   4. csrf, same position as upstream's own app.js
  */
 export default async function createEnhancedApp(config) {
@@ -50,16 +52,22 @@ export default async function createEnhancedApp(config) {
     app.use(baseUrl, formAuthPaths(baseUrl));
   }
 
+  registerValueFilters();
   const upstream = await withTemplateOverrides(() => middleware(config));
   // Enhanced templates shadow upstream's of the same name (UI tier 4, tracked in shadows.json). New enhanced templates
   // may be unshadowed pages' parents too: withTemplateOverrides makes `extends`/`include` follow the same precedence.
   upstream.set('views', [viewsDir, upstream.get('views')]);
   // Upstream only offers logout for OIDC (`res.locals.enableLogout`); form sign-in has the route but no button.
   upstream.locals.showLogout = isFormStrategy(config) || config.useOidcAuth === true;
+  const serveAssets = () => {
+    app.use(assetsUrl, express.static(publicDir));
+    app.use(assetsUrl, express.static(buildDir));
+  };
+  // Form sign-in's own page needs the stylesheet while nobody is signed in, and the assets are not secret. With basic auth the
+  // browser sends credentials for every same-origin request, so there they can stay behind upstream's auth.
+  if (isFormStrategy(config)) serveAssets();
   app.use(baseUrl, upstream);
-
-  app.use(assetsUrl, express.static(publicDir));
-  app.use(assetsUrl, express.static(buildDir));
+  if (!isFormStrategy(config)) serveAssets();
 
   app.use(baseUrl, csrf(process.env.NODE_ENV === 'test'
     ? { ignoreMethods: ['GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'] }

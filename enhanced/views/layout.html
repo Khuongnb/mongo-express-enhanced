@@ -48,11 +48,14 @@
 
 <main class="me-main">
   {% block pageHeader %}
+  {# pages without a title (the sign-in page) get no empty header and rule #}
+  {% if title %}
   <header class="me-page-header">
     <div class="me-title-block">
       <h1 id="pageTitle">{{ title }}</h1>
     </div>
   </header>
+  {% endif %}
   {% endblock %}
 
   {% if messageSuccess %}
