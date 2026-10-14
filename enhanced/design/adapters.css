@@ -121,3 +121,9 @@ table.tableHeaderFooterBars {
 .me-doc-footer .btn-primary { margin-left: auto; }
 /* upstream's script appends "Invalid JSON" / "discard changes" alerts to the title block */
 .me-title-block > .alert { margin: var(--me-space-2) 0 0; }
+
+/* ---------- L. Dismissible alerts ----------
+   Bootstrap pins .alert-dismissible's close button to the corner with 1.25rem x 1rem of padding, which stretched the designed
+   26px button over the whole alert. The designed alert is a flex row; the button is just its last item. */
+.alert-dismissible { padding-right: 10px; }
+.alert-dismissible .btn-close { position: static; padding: 0; box-sizing: border-box; opacity: 1; align-self: flex-start; }
