@@ -2,6 +2,7 @@
 // Launcher for the enhanced build: `yarn start:enhanced`. Mirrors upstream's app.js (config loading, SSL, listen)
 // but composes the app through enhanced/app.js. Differences from app.js: no --url/--port CLI flags and no
 // interactive connection-string prompt; configure through ME_CONFIG_* env vars or config.js.
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import https from 'node:https';
 import pico from 'picocolors';
@@ -35,6 +36,11 @@ if (!hasConnectionString(config.mongodb)) {
 }
 
 config.site.baseUrl ||= '/';
+
+// Upstream has no default for these, and every page 500s ("secret option required for sessions") without them. Sessions live in
+// memory, so a secret that lasts one run costs nothing; set ME_CONFIG_SITE_COOKIESECRET / _SESSIONSECRET to keep one across restarts.
+config.site.cookieSecret ||= crypto.randomBytes(24).toString('hex');
+config.site.sessionSecret ||= crypto.randomBytes(24).toString('hex');
 
 const app = await createEnhancedApp(config);
 const defaultPort = config.site.sslEnabled ? 443 : 80;
