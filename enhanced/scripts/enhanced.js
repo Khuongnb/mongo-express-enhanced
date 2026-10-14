@@ -4,6 +4,7 @@
 import initColumnPicker from './columnPicker.js';
 import { initDocumentSave } from './documentPage.js';
 import { initListFilter } from './listFilter.js';
+import { initSigninPage } from './signinPage.js';
 import {
   initCopy, initDeleteCollectionGate, initNumbers, initPagination, initQueryUi, initRanges,
 } from './tablePage.js';
@@ -20,6 +21,7 @@ ready(() => {
   initNumbers();
   initListFilter();
   initDocumentSave();
+  initSigninPage();
   initRanges();
   initCopy();
   initQueryUi();

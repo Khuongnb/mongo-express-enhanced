@@ -5,6 +5,7 @@
    - alerts carry icons; the page title sits in a new {% block pageHeader %} that designed pages override
    - public/css/style.css is not linked: the designed stylesheet (injected by the enhanced layer) supersedes it
    - the logout button shows for form sign-in too (upstream only does for OIDC)
+   - the alerts sit in {% block flash %} so the sign-in page can show its message inside its own card
    Everything else, including ME_SETTINGS and the scripts block, is upstream's. #}
 <!DOCTYPE html>
 <html lang="en">
@@ -58,6 +59,7 @@
   {% endif %}
   {% endblock %}
 
+  {% block flash %}
   {% if messageSuccess %}
   <div class="alert alert-success alert-dismissible" role="status">
     <i class="fas fa-check-circle" aria-hidden="true"></i>
@@ -73,6 +75,7 @@
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Dismiss"><i class="fas fa-times" aria-hidden="true"></i></button>
   </div>
   {% endif %}
+  {% endblock %}
 
   {% block content %}
   {% endblock %}
