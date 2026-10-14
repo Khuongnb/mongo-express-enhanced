@@ -2,6 +2,7 @@
 // Enhanced behaviour (UI tier 2): progressive enhancement of upstream pages.
 // Everything here is optional: the pages work without it, and each piece bails out when its markup is absent.
 import initColumnPicker from './columnPicker.js';
+import { initDocumentSave } from './documentPage.js';
 import { initListFilter } from './listFilter.js';
 import {
   initCopy, initDeleteCollectionGate, initNumbers, initPagination, initQueryUi, initRanges,
@@ -18,6 +19,7 @@ const ready = (callback) => {
 ready(() => {
   initNumbers();
   initListFilter();
+  initDocumentSave();
   initRanges();
   initCopy();
   initQueryUi();
