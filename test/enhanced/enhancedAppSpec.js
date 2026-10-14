@@ -94,6 +94,15 @@ describe('enhanced app', () => {
         await request.get('/').expect(302).expect('Location', loginUrl);
       }));
 
+      it('explains a rejected sign-in on the sign-in page, once', () => withServer(options, async (request) => {
+        await request.post('/login').type('form').send(credentials('nope')).expect(302);
+        const shown = await request.get('/login').expect(200);
+        expect(shown.text).to.contain('Invalid username or password.');
+        expect(shown.text).to.contain('<base href="/code-server/proxy/10081/">');
+        const again = await request.get('/login').expect(200);
+        expect(again.text).to.not.contain('Invalid username or password.');
+      }));
+
       it('signs in, serves pages, then signs out', () => withServer(options, async (request) => {
         await request.post('/login').type('form').send(credentials('p')).expect(302)
           .expect('Location', '/code-server/proxy/10081/');

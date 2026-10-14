@@ -7,6 +7,7 @@ import middleware from '../lib/middleware.js';
 import { ASSETS_MOUNT, resolveEnhancedConfig } from './config.js';
 import formAuthPaths from './features/formAuthPaths.js';
 import injectAssets from './features/injectAssets.js';
+import signinFlash from './features/signinFlash.js';
 import stripPrefix from './features/stripPrefix.js';
 import { registerValueFilters } from './features/valueFilter.js';
 import withTemplateOverrides from './features/templateOverrides.js';
@@ -50,6 +51,10 @@ export default async function createEnhancedApp(config) {
 
   if (baseUrl !== '/' && isFormStrategy(config)) {
     app.use(baseUrl, formAuthPaths(baseUrl));
+  }
+
+  if (isFormStrategy(config)) {
+    app.use(baseUrl, signinFlash(baseUrl));
   }
 
   registerValueFilters();
