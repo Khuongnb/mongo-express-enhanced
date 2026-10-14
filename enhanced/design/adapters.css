@@ -196,3 +196,15 @@ th:hover .me-sort-slot .sort-icon, th:focus-within .me-sort-slot .sort-icon { di
 .me-app .btn-icon[data-armed="true"], .me-app .btn-icon[data-armed="true"]:hover {
   width: auto; padding: 0 8px; background: var(--me-danger) !important; color: #fff !important; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
 }
+
+/* ---------- Q. Delete button on a column preset chip ----------
+   Shown when the chip is hovered or has focus, and always on touch screens (no hover there). */
+.me-preset-chip { position: relative; display: inline-flex; }
+.me-preset-x {
+  position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; padding: 0; border: 1px solid var(--me-border-strong);
+  border-radius: 50%; background: var(--me-surface); color: var(--me-text-muted); font-size: 8px;
+  display: inline-grid; place-items: center; cursor: pointer; opacity: 0; transition: opacity var(--me-dur) var(--me-ease);
+}
+.me-preset-chip:hover .me-preset-x, .me-preset-chip:focus-within .me-preset-x, .me-preset-x:focus-visible { opacity: 1; }
+.me-preset-x:hover { background: var(--me-danger); border-color: var(--me-danger); color: #fff; }
+@media (hover: none) { .me-preset-x { opacity: 1; } }

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import {
-  addPreset, hideAllColumns, matchColumns, parseJson, sameSet, sanitizeHidden, sanitizePresets, summarize, toggleColumn,
+  addPreset, hideAllColumns, matchColumns, parseJson, removePreset, sameSet, sanitizeHidden, sanitizePresets, summarize, toggleColumn,
 } from '../../enhanced/scripts/columns.js';
 
 const columns = ['_id', 'type', 'startAt', 'endAt', 'createdAt'];
@@ -63,5 +63,20 @@ describe('enhanced column picker logic', () => {
     expect(sanitizePresets([{ name: ' A ', hidden: ['type', 'gone'] }, { name: '' }, null, { hidden: [] }], columns))
       .to.deep.equal([{ name: 'A', hidden: ['type'] }]);
     expect(sanitizePresets('x', columns)).to.deep.equal([]);
+  });
+
+  describe('removePreset', () => {
+    const presets = [{ name: 'A', hidden: ['x'] }, { name: 'B', hidden: [] }, { name: 'C', hidden: ['y'] }];
+
+    it('drops the preset at that position and keeps the order of the rest', () => {
+      expect(removePreset(presets, 1).map((preset) => preset.name)).to.deep.equal(['A', 'C']);
+      expect(removePreset(presets, 0).map((preset) => preset.name)).to.deep.equal(['B', 'C']);
+    });
+
+    it('leaves the list as it is for an index that is not there, and does not change its input', () => {
+      expect(removePreset(presets, 7)).to.deep.equal(presets);
+      expect(removePreset(presets, 'x')).to.deep.equal(presets);
+      expect(presets).to.have.length(3);
+    });
   });
 });

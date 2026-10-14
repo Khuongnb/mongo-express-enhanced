@@ -3,7 +3,7 @@
 // The "Columns" control: show or hide table columns. Browser-only, nothing is sent to the server; the choice is remembered
 // per database/collection in localStorage. Logic that needs no DOM lives in columns.js (unit-tested).
 import {
-  PINNED, addPreset, matchColumns, parseJson, presetsKey, sameSet, sanitizeHidden, sanitizePresets,
+  PINNED, addPreset, matchColumns, parseJson, presetsKey, removePreset, sameSet, sanitizeHidden, sanitizePresets,
   storageKey, summarize, toggleColumn,
 } from './columns.js';
 
@@ -153,8 +153,11 @@ export default function initColumnPicker({ db, collection }) {
     holder.innerHTML = `<span class="me-eyebrow">Presets for ${escapeHtml(collection)}</span><div class="me-preset-list">`
       + presets.map((preset, index) => {
         const active = sameSet(preset.hidden, hidden);
-        return `<button type="button" class="me-preset${active ? ' active' : ''}" data-preset="${index}" aria-pressed="${active}">`
-          + `${active ? '<i class="fas fa-check" aria-hidden="true"></i>' : ''}${escapeHtml(preset.name)} <span class="me-preset-n">${total - preset.hidden.length}</span></button>`;
+        return '<span class="me-preset-chip">'
+          + `<button type="button" class="me-preset${active ? ' active' : ''}" data-preset="${index}" aria-pressed="${active}">`
+          + `${active ? '<i class="fas fa-check" aria-hidden="true"></i>' : ''}${escapeHtml(preset.name)} <span class="me-preset-n">${total - preset.hidden.length}</span></button>`
+          // a sibling, not a child: a button cannot contain a button
+          + `<button type="button" class="me-preset-x" data-act="delete-preset" data-index="${index}" aria-label="Delete preset ${escapeHtml(preset.name)}" title="Delete preset"><i class="fas fa-times" aria-hidden="true"></i></button></span>`;
       }).join('')
       + '<button type="button" class="me-preset" data-act="save-open"><i class="fas fa-plus" aria-hidden="true"></i>Save current</button></div>'
       + (saving
@@ -221,6 +224,11 @@ export default function initColumnPicker({ db, collection }) {
       saving = true;
       renderPresets();
     },
+    'delete-preset': (button) => {
+      presets = removePreset(presets, Number(button.dataset.index));
+      write(savedPresetsKey, presets);
+      renderPresets();
+    },
     save: () => {
       presets = addPreset(presets, panel.querySelector(':scope .me-preset-save input')?.value ?? '', hidden);
       write(savedPresetsKey, presets);
@@ -240,7 +248,7 @@ export default function initColumnPicker({ db, collection }) {
       renderList();
       return;
     }
-    actions[button.dataset.act]?.();
+    actions[button.dataset.act]?.(button);
   });
 
   panel.addEventListener('change', (event) => {

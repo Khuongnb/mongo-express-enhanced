@@ -58,6 +58,9 @@ export const addPreset = (presets, name, hidden) => {
   return [...presets.filter((preset) => preset.name !== clean), { name: clean, hidden: [...hidden] }].slice(-MAX_PRESETS);
 };
 
+/** The list without the preset at `index`; any other index leaves it as it is. */
+export const removePreset = (presets, index) => presets.filter((preset, position) => position !== index);
+
 export const sanitizePresets = (value, columns) => (Array.isArray(value)
   ? value
     .filter((preset) => preset && typeof preset.name === 'string' && preset.name.trim() !== '')
