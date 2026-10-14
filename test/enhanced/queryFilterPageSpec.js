@@ -134,6 +134,14 @@ describe('enhanced collection page: multi-row Simple filter', () => {
     expect(root.querySelector('#value').getAttribute('name')).to.equal('f[0][v]');
   });
 
+  it('hands the page\'s field types to the filter, for its Key to Type switch', async () => {
+    const root = await page({});
+    const types = JSON.parse(root.querySelector('[data-me-filter-form]').getAttribute('data-me-types'));
+    expect(types).to.deep.include({
+      name: 'S', n: 'N', tag: 'S', born: 'D', _id: 'O',
+    });
+  });
+
   it('offers one blank row when nothing is filtered, and a chip with key, operator and value for a single row', async () => {
     const blank = await page({});
     expect(blank.querySelectorAll('[data-me-filter-row]')).to.have.length(1);

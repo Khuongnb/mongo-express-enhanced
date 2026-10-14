@@ -5,6 +5,7 @@ import express from 'express';
 import { isFormStrategy } from '../lib/auth.js';
 import middleware from '../lib/middleware.js';
 import { ASSETS_MOUNT, resolveEnhancedConfig } from './config.js';
+import { registerColumnTypes } from './features/columnTypes.js';
 import formAuthPaths from './features/formAuthPaths.js';
 import injectAssets from './features/injectAssets.js';
 import queryFilter from './features/queryFilter.js';
@@ -64,6 +65,7 @@ export default async function createEnhancedApp(config) {
   app.use(baseUrl, queryFilter());
 
   registerValueFilters();
+  registerColumnTypes();
   const upstream = await withTemplateOverrides(() => middleware(config));
   // Enhanced templates shadow upstream's of the same name (UI tier 4, tracked in shadows.json). New enhanced templates
   // may be unshadowed pages' parents too: withTemplateOverrides makes `extends`/`include` follow the same precedence.

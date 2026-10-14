@@ -39,8 +39,32 @@ const flash = (button, message) => {
   setTimeout(() => button.replaceChildren(...original), 1200);
 };
 
+const readTypes = (form) => {
+  try {
+    return JSON.parse(form.dataset.meTypes || '{}');
+  } catch {
+    return {};
+  }
+};
+
+// A key that matches a known field picks that field's type; anything else is a String. Own properties only: a key
+// such as "constructor" must not find something on Object's prototype.
+export const typeForKey = (types, key) => (Object.hasOwn(types, key) ? types[key] : 'S');
+
+// Offers the known fields as suggestions on every Key input, new rows included (they are clones of the first).
+const addKeySuggestions = (form, types) => {
+  const paths = Object.keys(types);
+  if (paths.length === 0) return;
+  const list = document.createElement('datalist');
+  list.id = 'meFilterKeys';
+  list.replaceChildren(...paths.map((path) => Object.assign(document.createElement('option'), { value: path })));
+  form.append(list);
+  for (const input of form.querySelectorAll('input[name$="[k]"]')) input.setAttribute('list', list.id);
+};
+
 const clearRow = (row) => {
   const { key, op, value, type } = fields(row);
+  delete row.dataset.typeChosen;
   key.value = '';
   value.value = '';
   op.value = 'eq';
@@ -57,11 +81,28 @@ export const initFilterRows = () => {
   const addButton = form.querySelector('[data-me-filter-add]');
   const syncAdd = () => { addButton.disabled = list.children.length >= MAX_ROWS; };
 
-  for (const row of list.children) syncRow(row);
+  const types = readTypes(form);
+  addKeySuggestions(form, types);
+
+  for (const row of list.children) {
+    // A row that came back from the URL already has the type its author picked, or the one guessed for it.
+    if (fields(row).key.value) row.dataset.typeChosen = 'true';
+    syncRow(row);
+  }
 
   list.addEventListener('change', (event) => {
     const row = event.target.closest('[data-me-filter-row]');
-    if (row) syncRow(row);
+    if (!row) return;
+    // Choosing a type by hand wins over the guess from then on, for this row.
+    if (event.target.matches('[data-me-filter-type]')) row.dataset.typeChosen = 'true';
+    syncRow(row);
+  });
+
+  list.addEventListener('input', (event) => {
+    const row = event.target.closest('[data-me-filter-row]');
+    if (!row || !event.target.matches('input[name$="[k]"]') || row.dataset.typeChosen) return;
+    fields(row).type.value = typeForKey(types, event.target.value);
+    syncRow(row);
   });
 
   list.addEventListener('click', (event) => {
