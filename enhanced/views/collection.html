@@ -90,25 +90,53 @@
   </div>
   <div id="my-tab-content" class="tab-content card-body">
     <div class="tab-pane active" id="simple" role="tabpanel" aria-label="Simple query">
-      <form method="get" action="{{ collectionUrl }}" class="me-query-simple">
+      <form method="get" action="{{ collectionUrl }}" class="me-query-simple" data-me-filter-form data-rows="{{ meFilter.formRows.length }}" data-max-rows="{{ meFilter.max }}">
         {% for column in columns %}
         <input type="checkbox" name="sort[{{column}}]" class="d-none sort-{{column}}" {% if sort[column]
           %}value="{{sort[column]}}" checked="checked" {% endif %} />
         {% endfor %}
-        <div><label class="form-label" for="key">Key</label><input class="form-control font-monospace" type="text" id="key" name="key" placeholder="e.g. type or info.slug" title="Key" value="{{ key }}"></div>
-        <div><label class="form-label" for="value">Value</label><input class="form-control font-monospace" type="text" id="value" name="value" placeholder="e.g. program" title="Value" value="{{ value }}"></div>
-        <div>
-          <label class="form-label" for="queryType">Type</label>
-          <select id="queryType" name="type" class="form-select">
-            <option value="S" {% if type=='S' %}selected {% endif %}>String</option>
-            <option value="R" {% if type=='R' %}selected {% endif %}>Regex</option>
-            <option value="J" {% if type=='J' %}selected {% endif %}>JSON, bool</option>
-            <option value="N" {% if type=='N' %}selected {% endif %}>Number</option>
-            <option value="O" {% if type=='O' %}selected {% endif %}>ObjectId</option>
-            <option value="U" {% if type=='U' %}selected {% endif %}>UUID (v4)</option>
-          </select>
+        <div class="me-filter-rows" data-me-filter-rows>
+          {% for row in meFilter.formRows %}
+          <div class="me-filter-row" data-me-filter-row>
+            <label class="me-fld"><span class="form-label">Key</span><input class="form-control font-monospace" type="text" {% if loop.first %}id="key" {% endif %}name="f[{{ loop.index0 }}][k]" placeholder="e.g. type or info.slug" title="Key" autocomplete="off" spellcheck="false" value="{{ row.k }}"></label>
+            <label class="me-fld"><span class="form-label">Operator</span>
+              <select name="f[{{ loop.index0 }}][op]" class="form-select" title="Operator" data-me-filter-op>
+                <option value="eq" {% if row.op=='eq' %}selected {% endif %}>= equals</option>
+                <option value="ne" {% if row.op=='ne' %}selected {% endif %}>≠ not equal</option>
+                <option value="gt" {% if row.op=='gt' %}selected {% endif %}>&gt; greater</option>
+                <option value="gte" {% if row.op=='gte' %}selected {% endif %}>≥ at least</option>
+                <option value="lt" {% if row.op=='lt' %}selected {% endif %}>&lt; less</option>
+                <option value="lte" {% if row.op=='lte' %}selected {% endif %}>≤ at most</option>
+              </select>
+            </label>
+            <label class="me-fld"><span class="form-label">Value</span><input class="form-control font-monospace" type="text" {% if loop.first %}id="value" {% endif %}name="f[{{ loop.index0 }}][v]" placeholder="e.g. program" title="Value" autocomplete="off" spellcheck="false" value="{{ row.v }}"></label>
+            <label class="me-fld"><span class="form-label">Type</span>
+              <select name="f[{{ loop.index0 }}][t]" class="form-select" title="Type" data-me-filter-type>
+                <option value="S" {% if row.t=='S' %}selected {% endif %}>String</option>
+                <option value="N" {% if row.t=='N' %}selected {% endif %}>Number</option>
+                <option value="D" {% if row.t=='D' %}selected {% endif %}>Date (ISO)</option>
+                <option value="J" {% if row.t=='J' %}selected {% endif %}>JSON, bool</option>
+                <option value="R" {% if row.t=='R' %}selected {% endif %}>Regex</option>
+                <option value="O" {% if row.t=='O' %}selected {% endif %}>ObjectId</option>
+                <option value="U" {% if row.t=='U' %}selected {% endif %}>UUID (v4)</option>
+              </select>
+            </label>
+            <button type="button" class="btn btn-icon me-filter-remove" data-me-filter-remove aria-label="Remove this filter" title="Remove this filter"><i class="fas fa-times" aria-hidden="true"></i></button>
+          </div>
+          {% endfor %}
         </div>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-search" aria-hidden="true"></i>Find</button>
+        <div class="me-filter-footer">
+          <button type="button" class="btn btn-sm" data-me-filter-add><i class="fas fa-plus" aria-hidden="true"></i>Add filter</button>
+          <fieldset class="me-join" data-me-filter-join aria-label="How the filters combine">
+            <label><input type="radio" name="join" value="and" {% if meFilter.join != 'or' %}checked {% endif %}><span>All</span></label>
+            <label><input type="radio" name="join" value="or" {% if meFilter.join == 'or' %}checked {% endif %}><span>Any</span></label>
+          </fieldset>
+          {% if meFilter.queryText %}
+          <button type="button" class="btn btn-sm btn-ghost" data-me-copy-query="{{ meFilter.queryText }}" title="Copy this filter as an Advanced query"><i class="far fa-copy" aria-hidden="true"></i>Copy as query</button>
+          {% endif %}
+          <span class="me-spacer"></span>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-search" aria-hidden="true"></i>Find</button>
+        </div>
       </form>
     </div>
     <div class="tab-pane" id="advanced" role="tabpanel" aria-label="Advanced query">
@@ -148,7 +176,7 @@
 
 {% if !settings.read_only && !settings.no_delete && count > 0 %}
 <form id="deleteListForm" method="POST" class="me-danger-bar"
-  action="{{ collectionUrl }}?key={{ key }}&value={{ value }}&type={{ type }}&query={{ query|default('{}') }}&projection={{ projection }}&runAggregate={{ runAggregate }}">
+  action="{{ collectionUrl }}?{{ meFilter.qs | safe }}&query={{ query|default('{}') }}&projection={{ projection }}&runAggregate={{ runAggregate }}">
   {# Router is smart enough to transform method=POST + _method=delete into actual HTTP DELETE, which is what we want #}
   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
   <input type="hidden" name="_method" value="delete">
@@ -233,8 +261,8 @@
     <span class="me-chip" data-me-sort-chip="{{ k }}"><i class="fas {% if v == 1 %}fa-sort-amount-up-alt{% else %}fa-sort-amount-down{% endif %}" aria-hidden="true"></i>Sorted by <strong>{{ k }}</strong> {% if v == 1 %}asc{% else %}desc{% endif %}<button type="button" class="btn btn-icon" data-me-clear-sort aria-label="Clear sort"><i class="fas fa-times" aria-hidden="true"></i></button></span>
     {% endif %}
     {% endfor %}
-    {% if key || query %}
-    <span class="me-chip"><i class="fas fa-search" aria-hidden="true"></i>{% if query %}Query <strong class="me-chip-text">{{ query }}</strong>{% else %}<strong>{{ key }}</strong> = <strong>{{ value }}</strong>{% endif %}<a class="btn btn-icon" href="{{ collectionUrl }}" aria-label="Clear query"><i class="fas fa-times" aria-hidden="true"></i></a></span>
+    {% if meFilter.rows.length || query %}
+    <span class="me-chip"{% if meFilter.rows.length > 1 %} title="{{ meFilter.summary }}"{% endif %}><i class="fas fa-search" aria-hidden="true"></i>{% if meFilter.single %}<strong>{{ meFilter.single.k }}</strong> {{ meFilter.single.sym }} <strong>{{ meFilter.single.v }}</strong>{% elseif meFilter.rows.length %}<strong>{{ meFilter.rows.length }} filters</strong> {% if meFilter.join == 'or' %}any can match{% else %}all must match{% endif %}{% else %}Query <strong class="me-chip-text">{{ query }}</strong>{% endif %}<a class="btn btn-icon" href="{{ collectionUrl }}" aria-label="Clear query"><i class="fas fa-times" aria-hidden="true"></i></a></span>
     {% endif %}
     <span class="me-spacer"></span>
     <span class="me-range" data-me-range data-skip="{{ skip }}" data-shown="{{ documents.length }}" data-total="{{ count }}"><strong>{{ documents.length }}</strong> of <strong>{{ count }}</strong></span>
@@ -252,7 +280,7 @@
 
   {% if documents.length == 0 %}
   <div class="me-empty">
-    {% if key || query %}
+    {% if meFilter.rows.length || query %}
     <div class="me-empty-art"><i class="fas fa-search" aria-hidden="true"></i></div>
     <h3>No documents found</h3>
     <p>Nothing in <code>{{ dbName }}.{{ collectionName }}</code> matches this query. Check the key and the value type, or clear the query.</p>
@@ -327,7 +355,7 @@
                 {% endif %}
                 {% if !settings.read_only && !settings.no_delete && collectionName !== 'system.indexes' %}
                 <form class="me-inline-form" method="POST"
-                  action="{{ collectionUrl }}/{{ document._id | json | safe | url_encode }}?subtype={{ document._id.sub_type }}&skip={{ skip }}&key={{ key }}&value={{ value }}&type={{ type }}&query={{ query }}&projection={{ projection }}{% for k, v in sort %}&sort[{{ k }}]={{ v }}{% endfor %}">
+                  action="{{ collectionUrl }}/{{ document._id | json | safe | url_encode }}?subtype={{ document._id.sub_type }}&skip={{ skip }}&{{ meFilter.qs | safe }}&query={{ query }}&projection={{ projection }}{% for k, v in sort %}&sort[{{ k }}]={{ v }}{% endfor %}">
                   <input type="hidden" name="_method" value="delete">
                   <input type="hidden" name="_csrf" value="{{ csrfToken }}">
                   <button type="submit" class="btn btn-icon btn-xs btn-icon-danger deleteButtonDocument" aria-label="Delete document"><i class="fas fa-trash-alt" aria-hidden="true"></i></button>
@@ -426,9 +454,9 @@
       <div class="card-body">
         <div class="me-tiles">
           {% if !settings.me_no_export %}
-          <a class="me-tile" href="{{ dbUrl }}/export/{{ collectionName | url_encode }}?key={{ key }}&value={{ value }}&type={{ type }}&query={{ query | url_encode }}&projection={{ projection | url_encode }}{% for k, v in sort %}&sort[{{ k }}]={{ v }}{% endfor %}"><span class="me-tile-icon"><i class="fas fa-file-export" aria-hidden="true"></i></span><span class="me-tile-label">Export<br><code>standard</code></span></a>
-          <a class="me-tile" href="{{ dbUrl }}/expArr/{{ collectionName | url_encode }}?key={{ key }}&value={{ value }}&type={{ type }}&query={{ query | url_encode }}&projection={{ projection | url_encode }}{% for k, v in sort %}&sort[{{ k }}]={{ v }}{% endfor %}"><span class="me-tile-icon"><i class="fas fa-file-code" aria-hidden="true"></i></span><span class="me-tile-label">Export<br><code>--jsonArray</code></span></a>
-          <a class="me-tile" href="{{ dbUrl }}/expCsv/{{ collectionName | url_encode }}?key={{ key }}&value={{ value }}&type={{ type }}&query={{ query | url_encode }}&projection={{ projection | url_encode }}{% for k, v in sort %}&sort[{{ k }}]={{ v }}{% endfor %}"><span class="me-tile-icon"><i class="fas fa-file-csv" aria-hidden="true"></i></span><span class="me-tile-label">Export<br><code>--csv</code></span></a>
+          <a class="me-tile" href="{{ dbUrl }}/export/{{ collectionName | url_encode }}?{{ meFilter.qs | safe }}&query={{ query | url_encode }}&projection={{ projection | url_encode }}{% for k, v in sort %}&sort[{{ k }}]={{ v }}{% endfor %}"><span class="me-tile-icon"><i class="fas fa-file-export" aria-hidden="true"></i></span><span class="me-tile-label">Export<br><code>standard</code></span></a>
+          <a class="me-tile" href="{{ dbUrl }}/expArr/{{ collectionName | url_encode }}?{{ meFilter.qs | safe }}&query={{ query | url_encode }}&projection={{ projection | url_encode }}{% for k, v in sort %}&sort[{{ k }}]={{ v }}{% endfor %}"><span class="me-tile-icon"><i class="fas fa-file-code" aria-hidden="true"></i></span><span class="me-tile-label">Export<br><code>--jsonArray</code></span></a>
+          <a class="me-tile" href="{{ dbUrl }}/expCsv/{{ collectionName | url_encode }}?{{ meFilter.qs | safe }}&query={{ query | url_encode }}&projection={{ projection | url_encode }}{% for k, v in sort %}&sort[{{ k }}]={{ v }}{% endfor %}"><span class="me-tile-icon"><i class="fas fa-file-csv" aria-hidden="true"></i></span><span class="me-tile-label">Export<br><code>--csv</code></span></a>
           {% endif %}
           <a class="me-tile" href="{{ dbUrl }}/reIndex/{{ collectionName | url_encode }}"><span class="me-tile-icon"><i class="fas fa-sync-alt" aria-hidden="true"></i></span><span class="me-tile-label">Reindex</span></a>
           <a class="me-tile import-file-link" href="#"><span class="me-tile-icon"><i class="fas fa-file-import" aria-hidden="true"></i></span><span class="me-tile-label">Import<br><code>--mongoexport json</code></span></a>

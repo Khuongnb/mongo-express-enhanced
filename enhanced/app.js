@@ -7,6 +7,7 @@ import middleware from '../lib/middleware.js';
 import { ASSETS_MOUNT, resolveEnhancedConfig } from './config.js';
 import formAuthPaths from './features/formAuthPaths.js';
 import injectAssets from './features/injectAssets.js';
+import queryFilter from './features/queryFilter.js';
 import signinFlash from './features/signinFlash.js';
 import stripPrefix from './features/stripPrefix.js';
 import { registerValueFilters } from './features/valueFilter.js';
@@ -37,6 +38,8 @@ const readManifest = () => {
  */
 export default async function createEnhancedApp(config) {
   const app = express();
+  // Upstream turns this on for its own sub-app only; the filter middleware runs out here and needs f[0][k]=... as nested.
+  app.set('query parser', 'extended');
   const { baseUrl } = config.site;
   const enhanced = resolveEnhancedConfig(config);
   const assetsUrl = `${baseUrl}${ASSETS_MOUNT}`;
@@ -56,6 +59,9 @@ export default async function createEnhancedApp(config) {
   if (isFormStrategy(config)) {
     app.use(baseUrl, signinFlash(baseUrl));
   }
+
+  // Before upstream: it rewrites the request's filter parameters into the one shape upstream's Simple query understands.
+  app.use(baseUrl, queryFilter());
 
   registerValueFilters();
   const upstream = await withTemplateOverrides(() => middleware(config));

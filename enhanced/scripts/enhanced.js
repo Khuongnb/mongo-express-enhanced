@@ -4,6 +4,7 @@
 import initColumnPicker from './columnPicker.js';
 import { initDocumentSave } from './documentPage.js';
 import { initDocumentPopup } from './documentPopup.js';
+import { initFilterRows } from './filterRows.js';
 import { initConfirmClick } from './gridfsPage.js';
 import { initListFilter } from './listFilter.js';
 import { initSigninPage } from './signinPage.js';
@@ -34,6 +35,7 @@ ready(() => {
   initRanges();
   initCopy();
   initQueryUi();
+  initFilterRows();
   initDeleteCollectionGate();
   initColumnPicker({ db: ME_SETTINGS.dbName, collection: ME_SETTINGS.collectionName });
   // After upstream's jQuery-ready handlers, which render the paginator plugin into the same elements.

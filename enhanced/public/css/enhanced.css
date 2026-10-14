@@ -600,11 +600,25 @@
 [data-me-enhanced] .me-query .card-header { gap: var(--me-space-4); }
 [data-me-enhanced] .me-query .me-query-hint { margin-left: auto; font-size: var(--me-fs-sm); color: var(--me-text-muted); }
 [data-me-enhanced] .me-query .me-query-hint kbd { font-family: var(--me-font-mono); font-size: 12px; padding: 1px 5px; border: 1px solid var(--me-border-field); border-bottom-width: 2px; border-radius: 4px; color: var(--me-text); background: var(--me-surface); }
-[data-me-enhanced] .me-query-simple {
+[data-me-enhanced] .me-query-simple { display: flex; flex-direction: column; gap: var(--me-space-3); }
+[data-me-enhanced] .me-filter-rows { display: flex; flex-direction: column; gap: var(--me-space-3); }
+[data-me-enhanced] .me-filter-row {
   display: grid;
-  grid-template-columns: minmax(140px, 1fr) minmax(180px, 1.6fr) 170px auto;
+  grid-template-columns: minmax(140px, 1fr) 150px minmax(180px, 1.6fr) 150px 32px;
   gap: var(--me-space-3); align-items: end;
 }
+[data-me-enhanced] .me-fld { display: block; min-width: 0; }
+/* Only the first row shows its labels; the others keep them for screen readers. */
+[data-me-enhanced] .me-filter-row:not(:first-child) .me-fld > .form-label { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+[data-me-enhanced] .me-filter-remove { align-self: end; }
+[data-me-enhanced] .me-filter-footer { display: flex; flex-wrap: wrap; align-items: center; gap: var(--me-space-3); }
+[data-me-enhanced] .me-join { display: inline-flex; margin: 0; padding: 2px; min-width: 0; border: 1px solid var(--me-border-field); border-radius: var(--me-radius-md); }
+[data-me-enhanced] .me-join label { position: relative; cursor: pointer; }
+[data-me-enhanced] .me-join input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+[data-me-enhanced] .me-join span { display: block; padding: 2px 10px; border-radius: 5px; font-size: var(--me-fs-sm); color: var(--me-text-muted); }
+[data-me-enhanced] .me-join input:checked + span { background: var(--me-selected); color: var(--me-text); font-weight: 600; }
+[data-me-enhanced] .me-join input:focus-visible + span { outline: 2px solid var(--me-accent); outline-offset: 1px; }
+[data-me-enhanced] .me-query-simple[data-rows="1"] .me-join { display: none; }
 [data-me-enhanced] .me-query-advanced { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--me-space-4); }
 [data-me-enhanced] .me-query-footer { display: flex; align-items: center; gap: var(--me-space-4); margin-top: var(--me-space-4); }
 [data-me-enhanced] .me-query-raw { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--me-space-3); align-items: end; }
@@ -1073,10 +1087,16 @@
   [data-me-enhanced] #pageTitle, [data-me-enhanced] .me-page-title { font-size: 21px; }
   [data-me-enhanced] .me-page-actions { margin-left: 0; width: 100%; }
   [data-me-enhanced] .me-page-actions .btn { flex: 1; }
-  [data-me-enhanced] .me-query-simple { grid-template-columns: 1fr 1fr; }
-  [data-me-enhanced] .me-query-simple > :nth-child(2) { grid-column: 1 / -1; order: -1; }
-  [data-me-enhanced] .me-query-simple > :first-child { grid-column: 1 / -1; order: -2; }
-  [data-me-enhanced] .me-query-simple .btn { width: 100%; }
+  /* key + remove, then operator + type, then the value on its own line */
+  [data-me-enhanced] .me-filter-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 32px; }
+  [data-me-enhanced] .me-filter-row > :nth-child(1) { order: 1; grid-column: 1 / 3; }
+  [data-me-enhanced] .me-filter-row > .me-filter-remove { order: 2; grid-column: 3; }
+  [data-me-enhanced] .me-filter-row > :nth-child(2) { order: 3; grid-column: 1; }
+  [data-me-enhanced] .me-filter-row > :nth-child(4) { order: 4; grid-column: 2 / -1; }
+  [data-me-enhanced] .me-filter-row > :nth-child(3) { order: 5; grid-column: 1 / -1; }
+  [data-me-enhanced] .me-filter-row + .me-filter-row { padding-top: var(--me-space-3); border-top: 1px solid var(--me-border); }
+  [data-me-enhanced] .me-filter-row:not(:first-child) .me-fld > .form-label { position: static; width: auto; height: auto; margin: 0 0 6px; clip: auto; }
+  [data-me-enhanced] .me-filter-footer .btn-primary { width: 100%; }
   [data-me-enhanced] .me-query-advanced { grid-template-columns: 1fr; }
   [data-me-enhanced] .me-query .me-query-hint { display: none; }
   [data-me-enhanced] .me-cards { grid-template-columns: 1fr; }
