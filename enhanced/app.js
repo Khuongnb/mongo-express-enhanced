@@ -2,8 +2,10 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import csrf from 'csurf';
 import express from 'express';
+import { isFormStrategy } from '../lib/auth.js';
 import middleware from '../lib/middleware.js';
 import { ASSETS_MOUNT, resolveEnhancedConfig } from './config.js';
+import formAuthPaths from './features/formAuthPaths.js';
 import injectAssets from './features/injectAssets.js';
 import stripPrefix from './features/stripPrefix.js';
 
@@ -41,6 +43,10 @@ export default async function createEnhancedApp(config) {
 
   if (enhanced.injectAssets) {
     app.use(baseUrl, injectAssets({ assetsUrl, manifest: readManifest() }));
+  }
+
+  if (baseUrl !== '/' && isFormStrategy(config)) {
+    app.use(baseUrl, formAuthPaths(baseUrl));
   }
 
   const upstream = await middleware(config);
