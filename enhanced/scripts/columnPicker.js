@@ -267,7 +267,10 @@ export default function initColumnPicker({ db, collection }) {
   });
 
   document.addEventListener('click', (event) => {
-    if (isOpen() && !panel.contains(event.target) && !trigger.contains(event.target)) close();
+    // The trigger and the panel rewrite their own children while handling this very click (the counts, the list), so by the time
+    // this listener runs `event.target` may be a detached node that `contains()` no longer finds. The event path was fixed at dispatch.
+    const path = event.composedPath();
+    if (isOpen() && !path.includes(panel) && !path.includes(trigger)) close();
     if (event.target.closest('[data-me-open-picker]')) open();
     if (event.target.closest('[data-me-show-all]')) {
       hidden = [];
