@@ -1214,3 +1214,13 @@
   [data-me-enhanced] .me-filter input, [data-me-enhanced] .me-create .form-control { min-width: 0; width: 100%; }
   [data-me-enhanced] .me-filter, [data-me-enhanced] .me-create, [data-me-enhanced] .me-card-tools { width: 100%; }
 }
+
+/* ---------- K. Document page (shadowed document.html) ----------
+   The editor is CodeMirror 6 (dark theme, both modes, like the design's code editor); it fills the card. */
+[data-me-enhanced] .me-doc-editor { overflow: hidden; }
+[data-me-enhanced] .me-doc-editor .cm-editor { border-radius: 0; }
+[data-me-enhanced] .me-doc-editor .cm-editor.cm-focused { outline: none; box-shadow: inset 0 0 0 2px var(--me-focus, var(--me-link)); }
+[data-me-enhanced] .me-doc-footer { display: flex; align-items: center; gap: var(--me-space-3); padding: var(--me-space-3) var(--me-space-5); border-top: 1px solid var(--me-border); background: var(--me-surface-2); }
+[data-me-enhanced] .me-doc-footer .btn-primary { margin-left: auto; }
+/* upstream's script appends "Invalid JSON" / "discard changes" alerts to the title block */
+[data-me-enhanced] .me-title-block > .alert { margin: var(--me-space-2) 0 0; }

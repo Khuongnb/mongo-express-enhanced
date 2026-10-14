@@ -19,6 +19,11 @@
       "upstream": "lib/views/database.html",
       "shadow": "enhanced/views/database.html",
       "upstreamSha256": "7b06d481a1e8ce4287ed79cdda41617bf93719df6012343b2e149db87e8e3821"
+    },
+    {
+      "upstream": "lib/views/document.html",
+      "shadow": "enhanced/views/document.html",
+      "upstreamSha256": "6455e61c6df3d299229cbb0c837c0fbcd6572abaf2c392e2b53b61021d260d11"
     }
   ]
 }

@@ -1,0 +1,145 @@
+{# SHADOW of lib/views/document.html (UI tier 4) — drift is tracked in enhanced/shadows.json.
+   Differences from upstream, all for the redesign (the design has no page for this one: it is built from the collection design's parts):
+   - page header with Back / Save / Delete; the editor sits in a card. The header sits outside the edit form, so Save refers to it with
+     form="documentEditForm" and Delete is its own form there (it was a separate form below the editor upstream as well)
+   - upstream repeats Back/Save above the editor for documents over 10 lines; here they are in the header, and under the editor
+   - the delete confirmation is the designed modal (upstream's used the Bootstrap 3 attribute data-dismiss, which Bootstrap 5 ignores)
+   - the CodeMirror 5 style block is dropped: the editor is CodeMirror 6 and sizes itself
+   Kept as upstream has them, because lib/scripts/document.js needs them: #documentEditForm, #document, .backButton + onBackClick(),
+   onSubmitClick(), .deleteButtonDocument inside its own form, #confirm-document-delete with #delete, [name="_csrf"], and #pageTitle's
+   parent (the script appends its "Invalid JSON" / "discard changes" alerts there). #}
+{% extends 'layout.html' %}
+
+{% block title %}{{ document._id|stringDocIDs|to_string }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="nav-item">
+  <a class="nav-link px-1" href="{{ dbUrl }}">Database:</a>
+</li>
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle px-1" href="#" role="button" aria-controls="navbarDatabaseDropdown" data-bs-target="#navbarDatabaseDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+    {{ dbName }}
+  </a>
+  <ul id="navbarDatabaseDropdown" class="dropdown-menu scrollable-ul">
+    {% for db in databases %}
+    <li><a class="dropdown-item" href="{{ baseHref }}db/{{ db | url_encode }}/">{{ db }}</a></li>
+    {% endfor %}
+  </ul>
+</li>
+<li class="nav-item">
+  <a class="nav-link px-1" href="{{ collectionUrl }}">Collection:</a>
+</li>
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle px-1" href="#" role="button" aria-controls="navbarCollectionDropdown" data-bs-target="#navbarCollectionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+    {{ collectionName }}
+  </a>
+  <ul id="navbarCollectionDropdown" class="dropdown-menu scrollable-ul">
+    {% for collection in collections %}
+    <li><a class="dropdown-item" href="{{ dbUrl }}/{{ collection | url_encode }}">{{ collection }}</a></li>
+    {% endfor %}
+  </ul>
+</li>
+<li class="nav-item">
+  <a class="nav-link disabled">Document {{ document._id|stringDocIDs }}</a>
+</li>
+{% endblock %}
+
+{% block pageHeader %}
+<header class="me-page-header">
+  <div class="me-title-block">
+    <span class="me-eyebrow">Document{% if settings.read_only %} <span class="me-readonly-flag"><i class="fas fa-lock" aria-hidden="true"></i>Read-only</span>{% endif %}</span>
+    <h1 id="pageTitle"><span class="me-title-db">{{ dbName }}.{{ collectionName }} /</span> {{ document._id|stringDocIDs }}</h1>
+    <div class="me-meta">
+      <span><i class="fas fa-align-left" aria-hidden="true"></i><strong data-me-num>{{ docLength }}</strong> lines</span>
+    </div>
+  </div>
+  <div class="me-page-actions">
+    <button type="button" onclick="return onBackClick()" class="backButton btn"><i class="fas fa-arrow-left" aria-hidden="true"></i>Back</button>
+    {% if !settings.read_only %}
+    <button type="submit" form="documentEditForm" class="btn btn-primary" onclick="return onSubmitClick()"><i class="fas fa-save" aria-hidden="true"></i>Save</button>
+    {% if !settings.no_delete %}
+    {% if document._id._bsontype == 'Binary' %}
+    <form method="POST" class="me-inline-form" action="{{ collectionUrl }}/{{ document._id | json | safe | url_encode }}?subtype={{ document._id.sub_type }}">
+    {% elseif document._id._bsontype == 'Long' %}
+    <form method="POST" class="me-inline-form" action="{{ collectionUrl }}/{{ document._id | longToString | safe | url_encode }}">
+    {% else %}
+    <form method="POST" class="me-inline-form" action="{{ collectionUrl }}/{{ document._id | json | safe | url_encode }}">
+    {% endif %}
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="hidden" name="_method" value="delete">
+      <button type="submit" class="btn btn-outline-danger deleteButtonDocument"><i class="fas fa-trash-alt" aria-hidden="true"></i>Delete</button>
+    </form>
+    {% endif %}
+    {% endif %}
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+{% if document._id._bsontype == 'Binary' %}
+<form method="POST"
+  id="documentEditForm"
+  action="{{ collectionUrl }}/{{ document._id | json | safe | url_encode }}?subtype={{ document._id.sub_type }}&skip={{skip}}"
+>
+{% elseif document._id._bsontype == 'Long' %}
+<form method="POST"
+  id="documentEditForm"
+  action="{{ collectionUrl }}/{{ document._id | longToString | safe | url_encode }}?skip={{skip}}"
+>
+{% else %}
+<form method="POST"
+  id="documentEditForm"
+  action="{{ collectionUrl }}/{{ document._id | json | safe | url_encode }}?skip={{skip}}"
+>
+{% endif %}
+  <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+  {% if !settings.read_only %}<input type="hidden" name="_method" value="put">{% endif %}
+  <section class="card me-doc-editor" aria-labelledby="docTitle">
+    <div class="card-header">
+      <h2 class="card-title" id="docTitle"><i class="fas fa-code" aria-hidden="true"></i>Document JSON</h2>
+      <span class="me-card-sub">{% if settings.read_only %}read-only{% else %}extended JSON, e.g. ObjectId(), ISODate(){% endif %}</span>
+    </div>
+    <div class="card-body p-0">
+      <textarea class="col-md-12" id="document" name="document"{% if settings.read_only %} readonly="readonly"{% endif %}>{{ docString }}</textarea>
+    </div>
+    {% if docLength > 10 %}
+    <div class="me-doc-footer">
+      <button type="button" onclick="return onBackClick()" class="backButton btn"><i class="fas fa-arrow-left" aria-hidden="true"></i>Back</button>
+      {% if !settings.read_only %}
+      <button type="submit" class="btn btn-primary" onclick="return onSubmitClick()"><i class="fas fa-save" aria-hidden="true"></i>Save</button>
+      {% endif %}
+    </div>
+    {% endif %}
+  </section>
+</form>
+
+{% if !settings.read_only && !settings.no_delete %}
+<div class="modal fade" id="confirm-document-delete" tabindex="-1" aria-hidden="true" aria-labelledby="ddocTitle">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="me-modal-icon is-danger"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i></span>
+        <h2 class="modal-title" id="ddocTitle">Delete document</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger" style="margin: 0;">
+          <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+          <div class="me-alert-body">Are you sure you want to delete this document? This cannot be undone.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" data-bs-dismiss="modal" class="btn btn-ghost">Cancel</button>
+        <button type="button" data-bs-dismiss="modal" class="btn btn-danger" id="delete"><i class="fas fa-trash-alt" aria-hidden="true"></i>Delete document</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{{ baseHref }}{{ assets.codemirror.js }}"></script>
+<script src="{{ baseHref }}{{ assets.document.js }}"></script>
+{% endblock %}
