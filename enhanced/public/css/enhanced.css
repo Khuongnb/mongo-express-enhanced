@@ -1182,3 +1182,35 @@
    list, tools) got purple text on a green ground. Buttons keep their own colours. */
 [data-me-enhanced] .me-app a.btn, [data-me-enhanced] .me-app a.btn:hover { color: var(--bs-btn-color); text-decoration: none; }
 [data-me-enhanced] .me-app a.btn:hover { color: var(--bs-btn-hover-color, var(--bs-btn-color)); }
+
+/* ---------- J. Lists of databases / collections (shadowed index.html and database.html) ----------
+   The design has no list page of its own, so these rows are built from its tokens: a card whose rows carry an icon, the
+   name in mono, and the same buttons as everywhere else. */
+[data-me-enhanced] .me-list { list-style: none; margin: 0; padding: 0; }
+[data-me-enhanced] .me-item {
+  display: flex; align-items: center; gap: var(--me-space-4); flex-wrap: wrap;
+  padding: 10px var(--me-space-5); border-bottom: 1px solid var(--me-border);
+  transition: background var(--me-dur) var(--me-ease);
+}
+[data-me-enhanced] .me-item:last-child { border-bottom: 0; }
+[data-me-enhanced] .me-item:hover { background: var(--me-hover); }
+[data-me-enhanced] .me-item[hidden] { display: none; }
+[data-me-enhanced] .me-item-main { display: flex; align-items: center; gap: var(--me-space-3); min-width: 0; flex: 1 1 240px; color: var(--me-text); text-decoration: none; }
+[data-me-enhanced] .me-item-icon { flex: none; width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; background: var(--me-surface-3); color: var(--me-text-muted); font-size: 12px; }
+[data-me-enhanced] .me-item-name { font-family: var(--me-font-mono); font-size: var(--me-fs-lg); font-weight: 500; word-break: break-all; }
+[data-me-enhanced] .me-item-main:hover .me-item-name { text-decoration: underline; }
+[data-me-enhanced] .me-item-actions { display: flex; align-items: center; gap: var(--me-space-2); flex-wrap: wrap; margin-left: auto; }
+[data-me-enhanced] .me-item-actions form { display: contents; }
+[data-me-enhanced] .me-item-actions input[type="file"] { display: none; }
+[data-me-enhanced] .me-card-tools { margin-left: auto; display: flex; align-items: center; gap: var(--me-space-3); flex-wrap: wrap; }
+[data-me-enhanced] .me-filter { position: relative; display: inline-flex; align-items: center; }
+[data-me-enhanced] .me-filter .fas { position: absolute; left: 10px; font-size: 11px; color: var(--me-text-faint); pointer-events: none; }
+[data-me-enhanced] .me-filter input { padding-left: 28px; min-width: 200px; }
+[data-me-enhanced] .me-create { display: flex; max-width: 100%; }
+[data-me-enhanced] .me-create .form-control { min-width: 0; width: 220px; }
+[data-me-enhanced] .me-section-label { margin: var(--me-space-3) 0 0; }
+@media (max-width: 767.98px) {
+  [data-me-enhanced] .me-item-actions { margin-left: 0; width: 100%; }
+  [data-me-enhanced] .me-filter input, [data-me-enhanced] .me-create .form-control { min-width: 0; width: 100%; }
+  [data-me-enhanced] .me-filter, [data-me-enhanced] .me-create, [data-me-enhanced] .me-card-tools { width: 100%; }
+}

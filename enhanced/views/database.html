@@ -1,0 +1,180 @@
+{# SHADOW of lib/views/database.html (UI tier 4) — drift is tracked in enhanced/shadows.json.
+   Differences from upstream, all for the redesign (the design has no page for this one: it is built from the collection design's parts):
+   - page header with counts and the create form; a frontend-only filter box over the rows (data-me-filter*)
+   - rows instead of Bootstrap grid cells; View is the row link itself; the import trigger is a <button> (still .import-file-link)
+   - Import is not offered in read-only mode (upstream shows it and the server then refuses)
+   - GridFS buckets and database stats as designed cards
+   - the delete confirmation asks for the collection name (upstream's label said "database name")
+   Kept as upstream has them, because lib/scripts/database.js needs them: #collection, .deleteButton (child of its form, data-collection-name),
+   .import-file-link / .import-input-file (paired by position, data-collection-name), #confirm-deletion, #confirmation-input[data-shouldbe],
+   #modal-collection-name, #delete, and a [name="_csrf"] input before any other. #}
+{% extends 'layout.html' %}
+
+{% block title %}{{ dbName }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="nav-item">
+  <a class="nav-link px-1" href="{{ dbUrl }}">Database:</a>
+</li>
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle px-1" href="#" role="button" aria-controls="navbarDatabaseDropdown" data-bs-target="#navbarDatabaseDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+    {{ dbName }}
+  </a>
+  <ul id="navbarDatabaseDropdown" class="dropdown-menu scrollable-ul">
+    {% for db in databases %}
+    <li><a class="dropdown-item" href="{{ baseHref }}db/{{ db | url_encode }}/">{{ db }}</a></li>
+    {% endfor %}
+  </ul>
+</li>
+{% endblock %}
+
+{% block pageHeader %}
+<header class="me-page-header">
+  <div class="me-title-block">
+    <span class="me-eyebrow">Database</span>
+    <h1 id="pageTitle">{{ dbName }}</h1>
+    <div class="me-meta">
+      <span><i class="fas fa-layer-group" aria-hidden="true"></i><strong data-me-num>{{ colls.length }}</strong> collections</span>
+      {% if stats != false %}
+      <span><i class="fas fa-hdd" aria-hidden="true"></i><strong>{{ stats.dataSize }}</strong> data</span>
+      <span><i class="fas fa-bolt" aria-hidden="true"></i><strong>{{ stats.indexes }}</strong> indexes</span>
+      {% endif %}
+    </div>
+  </div>
+  {% if !settings.read_only %}
+  <div class="me-page-actions">
+    <form class="me-create" method="POST">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="input-group">
+        <input type="text" class="form-control font-monospace" id="collection" name="collection" placeholder="New collection name" autocomplete="off" spellcheck="false" aria-label="Collection name" />
+        <button type="submit" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i>Create collection</button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+</header>
+{% endblock %}
+
+{% block content %}
+<section class="card" aria-labelledby="collsTitle">
+  <div class="card-header">
+    <h2 class="card-title" id="collsTitle"><i class="fas fa-layer-group" aria-hidden="true"></i>Collections</h2>
+    <div class="me-card-tools">
+      <span class="me-card-sub" data-me-filter-count hidden></span>
+      <label class="me-filter">
+        <i class="fas fa-search" aria-hidden="true"></i>
+        <input type="search" class="form-control" placeholder="Filter collections" aria-label="Filter collections" data-me-filter autocomplete="off">
+      </label>
+    </div>
+  </div>
+  <ul class="me-list">
+    {% for c in colls %}
+    <li class="me-item" data-me-filter-item data-name="{{ c }}">
+      <a class="me-item-main" href="{{ dbUrl }}/{{ c | url_encode }}">
+        <span class="me-item-icon"><i class="fas fa-table" aria-hidden="true"></i></span>
+        <span class="me-item-name">{{ c }}</span>
+      </a>
+      <div class="me-item-actions">
+        <a href="{{ dbUrl }}/{{ c | url_encode }}" class="btn btn-sm"><i class="fas fa-eye" aria-hidden="true"></i>View</a>
+        {% if !settings.me_no_export %}
+        <a href="{{ dbUrl }}/export/{{ c | url_encode }}" class="btn btn-sm"><i class="fas fa-download" aria-hidden="true"></i>Export</a>
+        {% endif %}
+        <a href="{{ dbUrl }}/expArr/{{ c | url_encode }}" class="btn btn-sm"><i class="fas fa-download" aria-hidden="true"></i>[JSON]</a>
+        {% if !settings.read_only %}
+        <button type="button" class="btn btn-sm import-file-link"><i class="fas fa-upload" aria-hidden="true"></i>Import</button>
+        <input class="import-input-file" type="file" name="import-file" data-collection-name="{{ c | url_encode }}" />
+        {% endif %}
+        {% if !settings.read_only && !settings.no_delete %}
+        <form method="POST" action="{{ dbUrl }}/{{ c | url_encode }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="_method" value="delete">
+          <button type="submit" class="btn btn-sm btn-outline-danger deleteButton" data-collection-name="{{ c }}"><i class="fas fa-trash-alt" aria-hidden="true"></i>Delete</button>
+        </form>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  <div class="me-empty" data-me-filter-empty{% if colls.length %} hidden{% endif %}>
+    <div class="me-empty-art"><i class="fas fa-{% if colls.length %}search{% else %}inbox{% endif %}" aria-hidden="true"></i></div>
+    <h3>{% if colls.length %}No collection matches{% else %}No collections yet{% endif %}</h3>
+    <p>{% if colls.length %}Nothing matches that filter.{% else %}{% if !settings.read_only %}Create one with the form above.{% else %}This database has no collections.{% endif %}{% endif %}</p>
+  </div>
+</section>
+
+{% if !settings.read_only && !settings.no_delete %}
+<div class="modal fade" id="confirm-deletion" tabindex="-1" aria-hidden="true" aria-labelledby="dcTitle">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="me-modal-icon is-danger"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i></span>
+        <h2 class="modal-title" id="dcTitle">Delete collection</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger" style="margin: 0;">
+          <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+          <div class="me-alert-body">Be careful! You are about to delete the whole <strong><span id="modal-collection-name"></span></strong> collection.</div>
+        </div>
+        <div>
+          <label class="form-label" for="confirmation-input">Type the collection name to proceed:</label>
+          <input type="text" id="confirmation-input" name="confirmation-input" class="form-control font-monospace" data-shouldbe="" value="" autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" data-bs-dismiss="modal" class="btn btn-ghost">Cancel</button>
+        <button type="button" data-bs-dismiss="modal" class="btn btn-danger" id="delete"><i class="fas fa-trash-alt" aria-hidden="true"></i>Delete collection</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="me-cards">
+  {% if stats != false %}
+  <section class="card" aria-labelledby="statsTitle">
+    <div class="card-header"><h2 class="card-title" id="statsTitle"><i class="fas fa-chart-bar" aria-hidden="true"></i>Database stats</h2></div>
+    <div class="card-body p-0">
+      <table class="table-kv"><tbody>
+        <tr><th scope="row">Collections (incl. system.namespaces)</th><td data-me-num>{{ stats.collections }}</td></tr>
+        <tr><th scope="row">Data size</th><td>{{ stats.dataSize }}</td></tr>
+        <tr><th scope="row">Storage size</th><td>{{ stats.storageSize }}</td></tr>
+        {% if stats.fileSize %}<tr><th scope="row">File size (on disk)</th><td>{{ stats.fileSize }}</td></tr>{% endif %}
+        {% if stats.avgObjSize %}<tr><th scope="row">Average object size</th><td>{{ stats.avgObjSize }}</td></tr>{% endif %}
+        {% if stats.objects %}<tr><th scope="row">Objects</th><td data-me-num>{{ stats.objects }}</td></tr>{% endif %}
+        {% if stats.numExtents %}<tr><th scope="row">Extents</th><td>{{ stats.numExtents }}</td></tr>{% endif %}
+        {% if stats.extentFreeListNum %}<tr><th scope="row">Extents free list</th><td>{{ stats.extentFreeListNum }}</td></tr>{% endif %}
+        {% if stats.indexes %}<tr><th scope="row">Indexes</th><td>{{ stats.indexes }}</td></tr>{% endif %}
+        {% if stats.indexSize %}<tr><th scope="row">Index size</th><td>{{ stats.indexSize }}</td></tr>{% endif %}
+        {% if stats.dataFileVersion %}<tr><th scope="row">Data file version</th><td>{{ stats.dataFileVersion }}</td></tr>{% endif %}
+      </tbody></table>
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="me-stack">
+    {% if grids.length && settings.gridFSEnabled %}
+    <section class="card" aria-labelledby="gridTitle">
+      <div class="card-header"><h2 class="card-title" id="gridTitle"><i class="fas fa-file-archive" aria-hidden="true"></i>GridFS buckets</h2><span class="me-card-sub">{{ grids.length }}</span></div>
+      <ul class="me-list">
+        {% for b in grids %}
+        <li class="me-item">
+          <a class="me-item-main" href="{{ dbUrl }}/gridFS/{{ b }}">
+            <span class="me-item-icon"><i class="fas fa-file-archive" aria-hidden="true"></i></span>
+            <span class="me-item-name">{{ b }}</span>
+          </a>
+          <div class="me-item-actions"><a href="{{ dbUrl }}/gridFS/{{ b }}" class="btn btn-sm"><i class="fas fa-eye" aria-hidden="true"></i>View</a></div>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if !settings.read_only %}
+<script src="{{ baseHref }}{{ assets.database.js }}"></script>
+{% endif %}
+{% endblock %}

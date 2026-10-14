@@ -9,6 +9,16 @@
       "upstream": "lib/views/collection.html",
       "shadow": "enhanced/views/collection.html",
       "upstreamSha256": "a5a0f64f03348f87f4190e32178b71c34c23d1e33538bc9223d62e915886e9fe"
+    },
+    {
+      "upstream": "lib/views/index.html",
+      "shadow": "enhanced/views/index.html",
+      "upstreamSha256": "33a20b090b9799237fd983d16c1b2b48b8850bc7c76b9d9355bd304502a078b0"
+    },
+    {
+      "upstream": "lib/views/database.html",
+      "shadow": "enhanced/views/database.html",
+      "upstreamSha256": "7b06d481a1e8ce4287ed79cdda41617bf93719df6012343b2e149db87e8e3821"
     }
   ]
 }

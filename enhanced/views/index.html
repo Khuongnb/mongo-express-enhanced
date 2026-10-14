@@ -1,0 +1,178 @@
+{# SHADOW of lib/views/index.html (UI tier 4) — drift is tracked in enhanced/shadows.json.
+   Differences from upstream, all for the redesign (the design has no page for this one: it is built from the collection design's parts):
+   - page header with the database count and the create form; a frontend-only filter box over the rows (data-me-filter*)
+   - rows instead of Bootstrap grid cells; View is the row link itself
+   - server status as key/value cards; the flush rows only when the server reports them (modern MongoDB does not)
+   - the delete confirmation modal is the designed one
+   Kept as upstream has them, because lib/scripts/index.js needs them: #database, .deleteButton (child of its form, data-database-name),
+   #confirm-deletion, #confirmation-input[shouldbe], #modal-database-name, #delete. #}
+{% extends 'layout.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block breadcrumb %}
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle" href="#" role="button" aria-controls="navbarDatabaseDropdown" data-bs-target="#navbarDatabaseDropdown" data-bs-toggle="collapse" aria-expanded="false">
+    Database
+  </a>
+  <ul id="navbarDatabaseDropdown" class="dropdown-menu scrollable-ul">
+    {% for db in databases %}
+    <li><a class="dropdown-item" href="{{ baseHref }}db/{{ db | url_encode }}/">{{ db }}</a></li>
+    {% endfor %}
+  </ul>
+</li>
+{% endblock %}
+
+{% block pageHeader %}
+<header class="me-page-header">
+  <div class="me-title-block">
+    <span class="me-eyebrow">Server</span>
+    <h1 id="pageTitle">Databases</h1>
+    <div class="me-meta">
+      <span><i class="fas fa-database" aria-hidden="true"></i><strong data-me-num>{{ databases.length }}</strong> databases</span>
+      {% if info != false %}
+      <span><i class="fas fa-server" aria-hidden="true"></i>MongoDB <strong>{{ info.version }}</strong></span>
+      <span><i class="fas fa-link" aria-hidden="true"></i><strong>{{ info.host }}</strong></span>
+      {% endif %}
+    </div>
+  </div>
+  {% if !settings.read_only %}
+  <div class="me-page-actions">
+    <form class="me-create" method="POST">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <div class="input-group">
+        <input type="text" class="form-control font-monospace" id="database" name="database" placeholder="New database name" autocomplete="off" spellcheck="false" aria-label="Database name" />
+        <button type="submit" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i>Create database</button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+</header>
+{% endblock %}
+
+{% block content %}
+<section class="card" aria-labelledby="dbsTitle">
+  <div class="card-header">
+    <h2 class="card-title" id="dbsTitle"><i class="fas fa-database" aria-hidden="true"></i>All databases</h2>
+    <div class="me-card-tools">
+      <span class="me-card-sub" data-me-filter-count hidden></span>
+      <label class="me-filter">
+        <i class="fas fa-search" aria-hidden="true"></i>
+        <input type="search" class="form-control" placeholder="Filter databases" aria-label="Filter databases" data-me-filter autocomplete="off">
+      </label>
+    </div>
+  </div>
+  <ul class="me-list">
+    {% for db in databases %}
+    <li class="me-item" data-me-filter-item data-name="{{ db }}">
+      <a class="me-item-main" href="{{ baseHref }}db/{{ db | url_encode }}/">
+        <span class="me-item-icon"><i class="fas fa-database" aria-hidden="true"></i></span>
+        <span class="me-item-name">{{ db }}</span>
+      </a>
+      <div class="me-item-actions">
+        <a href="{{ baseHref }}db/{{ db | url_encode }}/" class="btn btn-sm"><i class="fas fa-eye" aria-hidden="true"></i>View</a>
+        {% if !settings.read_only && !settings.no_delete %}
+        <form method="POST" action="{{ baseHref }}{{ db | url_encode }}">
+          <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+          <input type="hidden" name="_method" value="delete">
+          <button type="submit" class="btn btn-sm btn-outline-danger deleteButton" data-database-name="{{ db }}"><i class="fas fa-trash-alt" aria-hidden="true"></i>Delete</button>
+        </form>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  <div class="me-empty" data-me-filter-empty{% if databases.length %} hidden{% endif %}>
+    <div class="me-empty-art"><i class="fas fa-{% if databases.length %}search{% else %}inbox{% endif %}" aria-hidden="true"></i></div>
+    <h3>{% if databases.length %}No database matches{% else %}No databases yet{% endif %}</h3>
+    <p>{% if databases.length %}Nothing matches that filter.{% else %}{% if !settings.read_only %}Create one with the form above; it appears once it holds a collection.{% else %}This server has none visible to this connection.{% endif %}{% endif %}</p>
+  </div>
+</section>
+
+{% if !settings.read_only && !settings.no_delete %}
+<div class="modal fade" id="confirm-deletion" tabindex="-1" aria-hidden="true" aria-labelledby="ddTitle">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="me-modal-icon is-danger"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i></span>
+        <h2 class="modal-title" id="ddTitle">Delete database</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger" style="margin: 0;">
+          <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+          <div class="me-alert-body">Be careful! You are about to delete the whole <strong><span id="modal-database-name"></span></strong> database, with every collection and document in it.</div>
+        </div>
+        <div>
+          <label class="form-label" for="confirmation-input">Type the database name to proceed:</label>
+          <input type="text" id="confirmation-input" name="confirmation-input" class="form-control font-monospace" shouldbe="" value="" autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" data-bs-dismiss="modal" class="btn btn-ghost">Cancel</button>
+        <button type="button" data-bs-dismiss="modal" class="btn btn-danger" id="delete"><i class="fas fa-trash-alt" aria-hidden="true"></i>Delete database</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if info != false %}
+<div class="me-cards">
+  <section class="card" aria-labelledby="srvTitle">
+    <div class="card-header"><h2 class="card-title" id="srvTitle"><i class="fas fa-server" aria-hidden="true"></i>Server</h2></div>
+    <div class="card-body p-0">
+      <table class="table-kv"><tbody>
+        <tr><th scope="row">Hostname</th><td>{{ info.host }}</td></tr>
+        <tr><th scope="row">MongoDB version</th><td>{{ info.version }}</td></tr>
+        <tr><th scope="row">Uptime</th><td>{{ info.uptime }} s{% if info.uptime > 86400 %} ({{ Math.floor( info.uptime/86400 ) }} days){% endif %}</td></tr>
+        <tr><th scope="row">Server time</th><td>{{ info.localTime|date('r') }}</td></tr>
+        <tr><th scope="row">Node version</th><td>{{ process.versions.node }}</td></tr>
+        <tr><th scope="row">V8 version</th><td>{{ process.versions.v8 }}</td></tr>
+      </tbody></table>
+    </div>
+  </section>
+
+  <div class="me-stack">
+    <section class="card" aria-labelledby="connTitle">
+      <div class="card-header"><h2 class="card-title" id="connTitle"><i class="fas fa-plug" aria-hidden="true"></i>Connections and locks</h2></div>
+      <div class="card-body p-0">
+        <table class="table-kv"><tbody>
+          <tr><th scope="row">Current connections</th><td>{{ info.connections.current }}</td></tr>
+          <tr><th scope="row">Available connections</th><td>{{ info.connections.available }}</td></tr>
+          <tr><th scope="row">Active clients</th><td>{{ info.globalLock.activeClients.total }}</td></tr>
+          <tr><th scope="row">Clients reading / writing</th><td>{{ info.globalLock.activeClients.readers }} / {{ info.globalLock.activeClients.writers }}</td></tr>
+          <tr><th scope="row">Queued operations</th><td>{{ info.globalLock.currentQueue.total }}</td></tr>
+          <tr><th scope="row">Read / write lock queue</th><td>{{ info.globalLock.currentQueue.readers }} / {{ info.globalLock.currentQueue.writers }}</td></tr>
+        </tbody></table>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="opsTitle">
+      <div class="card-header"><h2 class="card-title" id="opsTitle"><i class="fas fa-tachometer-alt" aria-hidden="true"></i>Operations</h2></div>
+      <div class="card-body p-0">
+        <table class="table-kv"><tbody>
+          <tr><th scope="row">Total inserts</th><td>{{ info.opcounters.insert }}</td></tr>
+          <tr><th scope="row">Total queries</th><td>{{ info.opcounters.query }}</td></tr>
+          <tr><th scope="row">Total updates</th><td>{{ info.opcounters.update }}</td></tr>
+          <tr><th scope="row">Total deletes</th><td>{{ info.opcounters.delete }}</td></tr>
+          {% if info.backgroundFlushing %}
+          <tr><th scope="row">Disk flushes</th><td>{{ info.backgroundFlushing.flushes }}</td></tr>
+          <tr><th scope="row">Last flush</th><td>{{ info.backgroundFlushing.last_finished|date('r') }}</td></tr>
+          <tr><th scope="row">Time spent flushing</th><td>{{ info.backgroundFlushing.total_ms }} ms</td></tr>
+          <tr><th scope="row">Average flush time</th><td>{{ info.backgroundFlushing.average_ms }} ms</td></tr>
+          {% endif %}
+        </tbody></table>
+      </div>
+    </section>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+
+{% block scripts %}
+{% if !settings.read_only %}
+<script src="{{ baseHref }}{{ assets.index.js }}"></script>
+{% endif %}
+{% endblock %}
