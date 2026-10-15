@@ -6,6 +6,8 @@
    - public/css/style.css is not linked: the designed stylesheet (injected by the enhanced layer) supersedes it
    - the logout button shows for form sign-in too (upstream only does for OIDC)
    - the alerts sit in {% block flash %} so the sign-in page can show its message inside its own card
+   - dark is the default theme (upstream's is light): the page is dark unless the saved choice is 'light'. Three tiny inline scripts
+     apply it before the page paints (see the comments on them); upstream's vendor script would only do so once it has downloaded
    Everything else, including ME_SETTINGS and the scripts block, is upstream's. #}
 <!DOCTYPE html>
 <html lang="en">
@@ -13,6 +15,24 @@
 <head>
   <base href="{{ baseHref }}">
   <meta charset="utf-8">
+  {# Dark is the default theme: the page is dark unless the saved choice is 'light' (the toggle saves 'light' or 'dark'; nothing is saved
+     until it is used). The page canvas is white until something gives it a colour, and until the stylesheets below have downloaded
+     nothing does: that is the white flash before a dark page. This runs before any of them is requested and paints the canvas dark
+     from the first frame. The observer drops it again once the theme is switched to light, so the canvas follows the body from then
+     on (a dark `html` would otherwise show behind a light body). If storage cannot be read, nothing is saved, so dark applies. #}
+  <style>html[data-me-dark] { background: #1f1633; color-scheme: dark; }</style>
+  <script>
+    (function () {
+      var saved = null;
+      try { saved = localStorage.getItem('bsTheme'); } catch (error) { /* no saved choice: the default applies */ }
+      if (saved === 'light') return;
+      var root = document.documentElement;
+      root.setAttribute('data-me-dark', '');
+      new MutationObserver(function () {
+        if (document.body && document.body.dataset.bsTheme === 'light') root.removeAttribute('data-me-dark');
+      }).observe(root, { subtree: true, attributes: true, attributeFilter: ['data-bs-theme'] });
+    })();
+  </script>
   <title>{% block title %}Index{% endblock %} - Mongo Express</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -28,6 +48,29 @@
 </head>
 
 <body class="me-app">
+
+{# Applies the dark theme before anything is painted, unless the saved choice is 'light'. Upstream's vendor script knows only the saved
+    'dark' (which it applies once it has downloaded and the document is ready, so the page showed light until then) and flips the
+    theme from whatever the body already has. So after setting the body here, storage must not say 'dark' to it: this hides the value
+    from its first read only, then restores the real getItem. #}
+<script>
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem('bsTheme'); } catch (error) { /* no saved choice: the default applies */ }
+    if (saved === 'light') return;
+    document.body.dataset.bsTheme = 'dark';
+    try {
+      var read = Storage.prototype.getItem;
+      Storage.prototype.getItem = function (key) {
+        if (this === localStorage && key === 'bsTheme') {
+          Storage.prototype.getItem = read;
+          return null;
+        }
+        return read.apply(this, arguments);
+      };
+    } catch (error) { /* upstream's own script then decides, as before */ }
+  })();
+</script>
 
 <nav id="navbar" class="me-navbar" aria-label="Main">
   <a class="navbar-brand" href="{{ baseHref }}">
@@ -46,6 +89,20 @@
     {% endif %}
   </div>
 </nav>
+
+{# The rest of what upstream's script does when it switches to dark (the sun icon, the navbar's classes), for the same reason as above. #}
+<script>
+  (function () {
+    if (document.body.dataset.bsTheme !== 'dark') return;
+    var icon = document.getElementById('darkModeIcon');
+    var nav = document.getElementById('navbar');
+    if (icon) { icon.classList.remove('fa-moon'); icon.classList.add('fa-sun'); }
+    if (nav) {
+      nav.classList.remove('navbar-light', 'bg-light');
+      nav.classList.add('navbar-dark', 'bg-dark');
+    }
+  })();
+</script>
 
 <main class="me-main">
   {% block pageHeader %}
@@ -89,7 +146,7 @@
     noDelete: '{{ !!settings.no_delete }}' === 'true',
     baseHref: '{{ baseHref }}',
     collapsibleJSON: '{{ !!settings.me_collapsible_json }}' === 'true',
-    collapsibleJSONDefaultUnfold: Number.parseInt('{{ settings.me_collapsible_json_default_unfold || 0}}', 10),
+    collapsibleJSONDefaultUnfold: Number.parseInt('{% if meJson %}{{ meJson.unfold }}{% else %}{{ settings.me_collapsible_json_default_unfold || 0}}{% endif %}', 10),
     confirmDelete: '{{ !!settings.me_confirm_delete }}' === 'true',
     dbName: '{{ dbName | url_encode }}',
     collectionName: '{{ collectionName | url_encode }}',

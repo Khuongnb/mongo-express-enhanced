@@ -7,10 +7,11 @@ import { initDocumentPopup } from './documentPopup.js';
 import { initFilterRows } from './filterRows.js';
 import { initConfirmClick } from './gridfsPage.js';
 import { initListFilter } from './listFilter.js';
+import initRecentQueries from './recentQueriesPanel.js';
 import { initSigninPage } from './signinPage.js';
 import { initSortControls } from './sortControls.js';
 import {
-  initCopy, initDeleteCollectionGate, initNumbers, initPagination, initQueryUi, initRanges,
+  initCopy, initDeleteCollectionGate, initNumbers, initJsonToggle, initPagination, initPerPage, initQueryUi, initRanges,
 } from './tablePage.js';
 
 // Lazy chunks (the code editor) sit next to this file, whatever the base URL or proxy prefix in front of the app is.
@@ -33,6 +34,7 @@ ready(() => {
   initSortControls();
   initConfirmClick();
   initRanges();
+  initPerPage();
   initCopy();
   initQueryUi();
   initFilterRows();
@@ -40,4 +42,7 @@ ready(() => {
   initColumnPicker({ db: ME_SETTINGS.dbName, collection: ME_SETTINGS.collectionName });
   // After upstream's jQuery-ready handlers, which render the paginator plugin into the same elements.
   setTimeout(initPagination, 0);
+  setTimeout(initJsonToggle, 0);
+  // After upstream's jQuery-ready handler, which may switch to the Advanced tab for a query in the address.
+  setTimeout(() => initRecentQueries({ db: ME_SETTINGS.dbName, collection: ME_SETTINGS.collectionName }), 0);
 });

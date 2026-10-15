@@ -11,6 +11,8 @@ const defaults = () => ({
   proxyStripsBaseUrl: toBoolean(process.env.ME_CONFIG_SITE_PROXY_STRIPS_BASEURL),
   // Inject enhanced.css / the enhanced bundle into every rendered HTML page.
   injectAssets: toBoolean(process.env.ME_CONFIG_ENHANCED_INJECT_ASSETS, true),
+  // JSON objects and arrays in the collection table start collapsed to one line, until someone turns the toggle off.
+  jsonCollapsed: toBoolean(process.env.ME_CONFIG_ENHANCED_JSON_COLLAPSED, true),
 });
 
 export const resolveEnhancedConfig = (config) => ({ ...defaults(), ...config.enhanced });

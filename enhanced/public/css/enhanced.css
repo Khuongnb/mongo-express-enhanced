@@ -1331,3 +1331,72 @@
 [data-me-enhanced] .me-preset-chip:hover .me-preset-x, [data-me-enhanced] .me-preset-chip:focus-within .me-preset-x, [data-me-enhanced] .me-preset-x:focus-visible { opacity: 1; }
 [data-me-enhanced] .me-preset-x:hover { background: var(--me-danger); border-color: var(--me-danger); color: #fff; }
 @media (hover: none) { [data-me-enhanced] .me-preset-x { opacity: 1; } }
+
+/* ---------- R. Rows-per-page picker (toolbar of the collection page) ---------- */
+[data-me-enhanced] .me-per-page { display: inline-flex; align-items: center; gap: 6px; font-size: var(--me-fs-sm); color: var(--me-text-muted); white-space: nowrap; }
+[data-me-enhanced] .me-per-page .form-select { width: auto; height: 28px; padding: 0 28px 0 8px; font-size: var(--me-fs-sm); font-variant-numeric: tabular-nums; }
+
+/* ---------- S. Sticky header row of the documents table ----------
+   `.me-table-scroll` scrolls sideways, which makes it the scroll container a sticky header sticks to, so the header only stays in
+   view if that container is the thing that scrolls up and down too: hence the height limit. Short pages never reach it. The _id
+   column is already sticky on the left; its header cell is the corner, above both. */
+[data-me-enhanced] .me-docs-card .me-table-scroll { max-height: calc(100vh - 140px); overflow-y: auto; }
+[data-me-enhanced] .me-docs-card .table-documents > thead > tr > th { position: sticky; top: 0; z-index: 3; }
+[data-me-enhanced] .me-docs-card .table-documents > thead > tr > th:first-child { left: 0; z-index: 4; }
+
+/* ---------- T. Collapse-JSON switch (toolbar of the collection page) ---------- */
+[data-me-enhanced] .me-json-switch { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: var(--me-fs-sm); color: var(--me-text-muted); white-space: nowrap; cursor: pointer; }
+[data-me-enhanced] .me-json-switch[hidden] { display: none; }
+[data-me-enhanced] .me-json-switch .form-check-input { margin: 0; cursor: pointer; }
+
+/* ---------- U. No bottom margin under a JSON value ----------
+   Upstream renders an object as a <pre>, and Bootstrap gives every <pre> margin-bottom: 1rem. In a table cell that is 16px of
+   empty space under a one-line value: a 50px row where a plain one is 34px. */
+[data-me-enhanced] .tableContent pre { margin: 0; }
+
+/* ---------- V. Recent queries (under the query forms of the collection page) ---------- */
+[data-me-enhanced] .me-recent { border-top: 1px solid var(--me-border); }
+[data-me-enhanced] .me-recent > summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 10px var(--me-space-4);
+  font-size: var(--me-fs-sm); font-weight: 600; color: var(--me-text-muted); user-select: none;
+}
+[data-me-enhanced] .me-recent > summary::-webkit-details-marker { display: none; }
+[data-me-enhanced] .me-recent > summary::before {
+  content: "\f0da"; font-family: "Font Awesome 5 Free"; font-weight: 900; font-size: 10px; width: 12px; text-align: center;
+  color: var(--me-text-faint); transition: transform var(--me-dur) var(--me-ease);
+}
+[data-me-enhanced] .me-recent[open] > summary::before { transform: rotate(90deg); }
+[data-me-enhanced] .me-recent > summary:hover { color: var(--me-text); }
+[data-me-enhanced] .me-recent[hidden] { display: none; }
+[data-me-enhanced] .me-recent-body { padding: 0 var(--me-space-4) var(--me-space-4); }
+[data-me-enhanced] .me-recent-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+[data-me-enhanced] .me-recent-hint { font-size: var(--me-fs-sm); color: var(--me-text-muted); }
+[data-me-enhanced] .me-recent-empty { margin: 4px 0 0; font-size: var(--me-fs-md); color: var(--me-text-muted); }
+[data-me-enhanced] .me-recent-table { table-layout: auto; }
+[data-me-enhanced] .me-recent-table > tbody > tr > td { vertical-align: middle; padding: 5px 10px; }
+[data-me-enhanced] .me-recent-table .is-num { width: 36px; text-align: right; color: var(--me-text-faint); font-variant-numeric: tabular-nums; }
+[data-me-enhanced] .me-recent-table th:nth-child(2), [data-me-enhanced] .me-recent-table .me-rq-pin-cell { width: 44px; text-align: center; }
+[data-me-enhanced] .me-recent-table th:last-child, [data-me-enhanced] .me-recent-table .me-rq-actions { width: 1%; white-space: nowrap; text-align: right; }
+[data-me-enhanced] .me-rq-pin { color: var(--me-text-faint); }
+[data-me-enhanced] .me-rq-pin:hover { color: var(--me-text); }
+[data-me-enhanced] .me-rq-pin.is-pinned { color: var(--me-accent); }
+[data-me-enhanced] .me-rq-pin.is-pinned .fas { transform: rotate(-30deg); }
+[data-me-enhanced] .me-recent-table > tbody > tr.is-pinned > td { background: var(--me-selected); }
+[data-me-enhanced] .me-rq-name-cell { white-space: nowrap; min-width: 150px; }
+[data-me-enhanced] .me-rq-name { font-family: var(--me-font-mono); font-size: var(--me-fs-mono); }
+[data-me-enhanced] .me-rq-name-input { height: 28px; width: 190px; font-family: var(--me-font-mono); font-size: var(--me-fs-mono); }
+[data-me-enhanced] .me-rq-query { max-width: 0; width: 100%; }
+[data-me-enhanced] .me-rq-text {
+  display: inline-block; max-width: calc(100% - 96px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;
+  font-family: var(--me-font-mono); font-size: var(--me-fs-mono);
+}
+[data-me-enhanced] .me-rq-kind {
+  display: inline-block; margin-right: 8px; padding: 1px 6px; border-radius: 4px; vertical-align: middle; width: 78px; white-space: nowrap; text-align: center;
+  background: var(--me-surface-3); color: var(--me-text-muted); font-size: var(--me-fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: .3px;
+}
+[data-me-enhanced] .me-rq-actions .btn { vertical-align: middle; }
+/* The edit and remove buttons show for the row under the pointer or with focus, and always where there is no hover. */
+[data-me-enhanced] .me-rq-hover { opacity: 0; transition: opacity var(--me-dur) var(--me-ease); }
+[data-me-enhanced] .me-recent-table > tbody > tr:hover .me-rq-hover, [data-me-enhanced] .me-recent-table > tbody > tr:focus-within .me-rq-hover, [data-me-enhanced] .me-rq-hover:focus-visible { opacity: 1; }
+[data-me-enhanced] .me-rq-x:hover { color: var(--me-danger); }
+@media (hover: none) { [data-me-enhanced] .me-rq-hover { opacity: 1; } }
