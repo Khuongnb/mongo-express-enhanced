@@ -230,3 +230,50 @@ th:hover .me-sort-slot .sort-icon, th:focus-within .me-sort-slot .sort-icon { di
    Upstream renders an object as a <pre>, and Bootstrap gives every <pre> margin-bottom: 1rem. In a table cell that is 16px of
    empty space under a one-line value: a 50px row where a plain one is 34px. */
 .tableContent pre { margin: 0; }
+
+/* ---------- V. Recent queries (under the query forms of the collection page) ---------- */
+.me-recent { border-top: 1px solid var(--me-border); }
+.me-recent > summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 10px var(--me-space-4);
+  font-size: var(--me-fs-sm); font-weight: 600; color: var(--me-text-muted); user-select: none;
+}
+.me-recent > summary::-webkit-details-marker { display: none; }
+.me-recent > summary::before {
+  content: "\f0da"; font-family: "Font Awesome 5 Free"; font-weight: 900; font-size: 10px; width: 12px; text-align: center;
+  color: var(--me-text-faint); transition: transform var(--me-dur) var(--me-ease);
+}
+.me-recent[open] > summary::before { transform: rotate(90deg); }
+.me-recent > summary:hover { color: var(--me-text); }
+.me-recent[hidden] { display: none; }
+.me-recent-body { padding: 0 var(--me-space-4) var(--me-space-4); }
+.me-recent-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.me-recent-hint { font-size: var(--me-fs-sm); color: var(--me-text-muted); }
+.me-recent-empty { margin: 4px 0 0; font-size: var(--me-fs-md); color: var(--me-text-muted); }
+.me-recent-table { table-layout: auto; }
+.me-recent-table > tbody > tr > td { vertical-align: middle; padding: 5px 10px; }
+.me-recent-table .is-num { width: 36px; text-align: right; color: var(--me-text-faint); font-variant-numeric: tabular-nums; }
+.me-recent-table th:nth-child(2), .me-recent-table .me-rq-pin-cell { width: 44px; text-align: center; }
+.me-recent-table th:last-child, .me-recent-table .me-rq-actions { width: 1%; white-space: nowrap; text-align: right; }
+.me-rq-pin { color: var(--me-text-faint); }
+.me-rq-pin:hover { color: var(--me-text); }
+.me-rq-pin.is-pinned { color: var(--me-accent); }
+.me-rq-pin.is-pinned .fas { transform: rotate(-30deg); }
+.me-recent-table > tbody > tr.is-pinned > td { background: var(--me-selected); }
+.me-rq-name-cell { white-space: nowrap; min-width: 150px; }
+.me-rq-name { font-family: var(--me-font-mono); font-size: var(--me-fs-mono); }
+.me-rq-name-input { height: 28px; width: 190px; font-family: var(--me-font-mono); font-size: var(--me-fs-mono); }
+.me-rq-query { max-width: 0; width: 100%; }
+.me-rq-text {
+  display: inline-block; max-width: calc(100% - 96px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;
+  font-family: var(--me-font-mono); font-size: var(--me-fs-mono);
+}
+.me-rq-kind {
+  display: inline-block; margin-right: 8px; padding: 1px 6px; border-radius: 4px; vertical-align: middle; width: 78px; white-space: nowrap; text-align: center;
+  background: var(--me-surface-3); color: var(--me-text-muted); font-size: var(--me-fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: .3px;
+}
+.me-rq-actions .btn { vertical-align: middle; }
+/* The edit and remove buttons show for the row under the pointer or with focus, and always where there is no hover. */
+.me-rq-hover { opacity: 0; transition: opacity var(--me-dur) var(--me-ease); }
+.me-recent-table > tbody > tr:hover .me-rq-hover, .me-recent-table > tbody > tr:focus-within .me-rq-hover, .me-rq-hover:focus-visible { opacity: 1; }
+.me-rq-x:hover { color: var(--me-danger); }
+@media (hover: none) { .me-rq-hover { opacity: 1; } }

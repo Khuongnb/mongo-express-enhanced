@@ -18,6 +18,7 @@ collection filter.
 - **Shareable filters.** Filters live in the URL, so they can be bookmarked and sent to a colleague.
 - **Redesigned interface.** Light and dark themes (dark by default), a layout that works on a phone, typed cells, a column picker with saved presets,
   sorting from the column header, and click-a-row editing in a popup.
+- **Recent queries.** The last 10 Simple and Advanced queries that ran, per collection and kept in the browser, with Load, rename and pins that stay until removed.
 - **Collapse JSON.** Objects and arrays start collapsed to one line so a big value cannot stretch a row; a toolbar switch unfolds them.
 - **Rows per page.** Pick 10, 25, 50, 100 or 250 in the toolbar; the choice is remembered. 25 by default.
 - **Friendlier behind a reverse proxy**, and a sign-in page that says when a password was wrong.

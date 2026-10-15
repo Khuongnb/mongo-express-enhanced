@@ -7,6 +7,7 @@ import { initDocumentPopup } from './documentPopup.js';
 import { initFilterRows } from './filterRows.js';
 import { initConfirmClick } from './gridfsPage.js';
 import { initListFilter } from './listFilter.js';
+import initRecentQueries from './recentQueriesPanel.js';
 import { initSigninPage } from './signinPage.js';
 import { initSortControls } from './sortControls.js';
 import {
@@ -42,4 +43,6 @@ ready(() => {
   // After upstream's jQuery-ready handlers, which render the paginator plugin into the same elements.
   setTimeout(initPagination, 0);
   setTimeout(initJsonToggle, 0);
+  // After upstream's jQuery-ready handler, which may switch to the Advanced tab for a query in the address.
+  setTimeout(() => initRecentQueries({ db: ME_SETTINGS.dbName, collection: ME_SETTINGS.collectionName }), 0);
 });

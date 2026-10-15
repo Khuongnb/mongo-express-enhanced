@@ -172,6 +172,11 @@
     </div>
     {% endif %}
   </div>
+  {# Filled in by enhanced/scripts/recentQueriesPanel.js, which also reveals it: nothing shows without the script #}
+  <details class="me-recent" data-me-recent hidden>
+    <summary><span class="me-recent-title">Recent queries</span> <span class="me-count" data-me-recent-count>0</span></summary>
+    <div class="me-recent-body" data-me-recent-body></div>
+  </details>
 </section>
 
 {% if !settings.read_only && !settings.no_delete && count > 0 %}

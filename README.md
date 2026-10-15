@@ -49,6 +49,9 @@ Every page is redesigned: light and dark themes (dark by default, switched with 
 - **Sorting**: hover a column header for ascending and descending buttons; clicking the name still cycles ascending, descending, none.
 - **Rows per page**: a **Rows** picker (10, 25, 50, 100, 250) in the table toolbar, remembered in the browser for every collection.
   25 by default, where upstream shows 10. `?limit=100` in the address does the same for one visit.
+- **Recent queries**: a collapsed **Recent queries** list under the query forms remembers the last 10 Simple and Advanced queries that ran
+  without error, per collection, in the browser. **Load** runs one again, a repeated query moves to the front instead of being added twice,
+  and the pin keeps one (it does not count toward the 10) until you remove it with the x. Queries can be renamed. Raw commands are never kept.
 - **Collapse JSON**: objects and arrays start collapsed to one line, so a big value cannot stretch its row. A **Collapse JSON** switch in the
   toolbar (shown when the page has a JSON value) unfolds them, and the choice is remembered in the browser.
 - **Copy an `_id`** with one click, jump to any page, and open a document in a new tab straight from the row.
