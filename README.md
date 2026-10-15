@@ -47,6 +47,8 @@ Every page is redesigned: light and dark themes, and a layout that holds up on a
 - **Column picker**: show or hide columns per collection, search them, and save sets of columns as **presets**. Your choices are remembered
   in the browser.
 - **Sorting**: hover a column header for ascending and descending buttons; clicking the name still cycles ascending, descending, none.
+- **Rows per page**: a **Rows** picker (10, 25, 50, 100, 250) in the table toolbar, remembered in the browser for every collection.
+  25 by default, where upstream shows 10. `?limit=100` in the address does the same for one visit.
 - **Copy an `_id`** with one click, jump to any page, and open a document in a new tab straight from the row.
 
 ### Editing a document without leaving the table
@@ -114,6 +116,8 @@ Settings added by this fork (everything else is upstream's, listed further down)
 | - | - | - |
 | `ME_CONFIG_SITE_PROXY_STRIPS_BASEURL` | `false` | The reverse proxy in front of the app removes `ME_CONFIG_SITE_BASEURL` before forwarding. |
 | `ME_CONFIG_ENHANCED_INJECT_ASSETS` | `true` | Inject the enhanced stylesheet and script into every page. Leave it on; it exists for debugging. |
+| `ME_CONFIG_DOCUMENTS_PER_PAGE` | `25` | Rows shown per page until someone picks another size (upstream's default is 10). Upstream's own setting, with a new default here. |
+| `ME_CONFIG_ENHANCED_MAX_PER_PAGE` | `250` | The most rows a page can show, whatever the picker, `?limit=` or a saved choice asks for. Never lower than the default above. |
 
 ## How the fork is built
 
@@ -334,7 +338,7 @@ You can use the following [environment variables](https://docs.docker.com/refere
 | `ME_CONFIG_SITE_SSL_CRT_PATH`                  | ` `                                                 | SSL certificate file.
 | `ME_CONFIG_SITE_SSL_KEY_PATH`                  | ` `                                                 | SSL key file.
 | `ME_CONFIG_SITE_GRIDFS_ENABLED`                | `false`                                             | Enable gridFS to manage uploaded files.
-| `ME_CONFIG_DOCUMENTS_PER_PAGE`                 | `10`                                                | How many documents you want to see at once in collection view
+| `ME_CONFIG_DOCUMENTS_PER_PAGE`                 | `10` (`25` in this fork)                            | How many documents you want to see at once in collection view
 | `PORT`                                         | `8081`                                              | port that mongo-express will run on.
 | `VCAP_APP_HOST`                                | `localhost`                                         | address that mongo-express will listen on for incoming connections.
 

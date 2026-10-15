@@ -10,7 +10,7 @@ import { initListFilter } from './listFilter.js';
 import { initSigninPage } from './signinPage.js';
 import { initSortControls } from './sortControls.js';
 import {
-  initCopy, initDeleteCollectionGate, initNumbers, initPagination, initQueryUi, initRanges,
+  initCopy, initDeleteCollectionGate, initNumbers, initPagination, initPerPage, initQueryUi, initRanges,
 } from './tablePage.js';
 
 // Lazy chunks (the code editor) sit next to this file, whatever the base URL or proxy prefix in front of the app is.
@@ -33,6 +33,7 @@ ready(() => {
   initSortControls();
   initConfirmClick();
   initRanges();
+  initPerPage();
   initCopy();
   initQueryUi();
   initFilterRows();

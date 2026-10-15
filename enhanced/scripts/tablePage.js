@@ -70,6 +70,26 @@ export const initPagination = () => {
   });
 };
 
+const PER_PAGE_COOKIE = 'me_per_page';
+const YEAR = 60 * 60 * 24 * 365;
+
+// The picker remembers the size in a cookie the server reads (so no redirect, and the same size on every collection), then reloads
+// without `limit` in the URL, which would otherwise win over the cookie, and from the first page, since the old offset means nothing.
+export const initPerPage = () => {
+  const select = document.querySelector('[data-me-per-page]');
+  if (!select) return;
+  select.addEventListener('change', () => {
+    const secure = globalThis.location.protocol === 'https:' ? '; Secure' : '';
+    // eslint-disable-next-line unicorn/no-document-cookie -- the server reads this cookie; the Cookie Store API is not in every supported browser
+    document.cookie = `${PER_PAGE_COOKIE}=${select.value}; Path=${ME_SETTINGS.baseHref || '/'}; Max-Age=${YEAR}; SameSite=Lax${secure}`;
+    const params = new URLSearchParams(globalThis.location.search);
+    params.delete('limit');
+    params.delete('skip');
+    const query = params.toString();
+    globalThis.location.assign(`${globalThis.location.pathname}${query ? `?${query}` : ''}`);
+  });
+};
+
 export const initCopy = () => {
   // Capture phase: rows navigate on click through an inline handler, which a bubbling listener would be too late to stop.
   document.addEventListener('click', (event) => {

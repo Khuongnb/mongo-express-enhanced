@@ -8,6 +8,7 @@ import { ASSETS_MOUNT, resolveEnhancedConfig } from './config.js';
 import { registerColumnTypes } from './features/columnTypes.js';
 import formAuthPaths from './features/formAuthPaths.js';
 import injectAssets from './features/injectAssets.js';
+import perPage from './features/perPage.js';
 import queryFilter from './features/queryFilter.js';
 import signinFlash from './features/signinFlash.js';
 import stripPrefix from './features/stripPrefix.js';
@@ -63,6 +64,9 @@ export default async function createEnhancedApp(config) {
 
   // Before upstream: it rewrites the request's filter parameters into the one shape upstream's Simple query understands.
   app.use(baseUrl, queryFilter());
+  // Also before upstream: the page size is chosen per request (?limit=, the picker's cookie, the default), through a getter it
+  // installs on config.options.documentsPerPage.
+  app.use(baseUrl, perPage(config, enhanced));
 
   registerValueFilters();
   registerColumnTypes();

@@ -266,6 +266,9 @@
     {% endif %}
     <span class="me-spacer"></span>
     <span class="me-range" data-me-range data-skip="{{ skip }}" data-shown="{{ documents.length }}" data-total="{{ count }}"><strong>{{ documents.length }}</strong> of <strong>{{ count }}</strong></span>
+    {% if mePerPage && count > mePerPage.choices[0] %}
+    <label class="me-per-page">Rows <select class="form-select" data-me-per-page aria-label="Rows per page">{% for size in mePerPage.choices %}<option value="{{ size }}"{% if size == limit %} selected{% endif %}>{{ size }}</option>{% endfor %}</select></label>
+    {% endif %}
     {% if pagination %}
     <nav id="paginator-top" aria-label="Pages (top)"></nav>
     {% endif %}

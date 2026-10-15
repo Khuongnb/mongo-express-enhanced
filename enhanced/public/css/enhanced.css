@@ -1331,3 +1331,7 @@
 [data-me-enhanced] .me-preset-chip:hover .me-preset-x, [data-me-enhanced] .me-preset-chip:focus-within .me-preset-x, [data-me-enhanced] .me-preset-x:focus-visible { opacity: 1; }
 [data-me-enhanced] .me-preset-x:hover { background: var(--me-danger); border-color: var(--me-danger); color: #fff; }
 @media (hover: none) { [data-me-enhanced] .me-preset-x { opacity: 1; } }
+
+/* ---------- R. Rows-per-page picker (toolbar of the collection page) ---------- */
+[data-me-enhanced] .me-per-page { display: inline-flex; align-items: center; gap: 6px; font-size: var(--me-fs-sm); color: var(--me-text-muted); white-space: nowrap; }
+[data-me-enhanced] .me-per-page .form-select { width: auto; height: 28px; padding: 0 28px 0 8px; font-size: var(--me-fs-sm); font-variant-numeric: tabular-nums; }

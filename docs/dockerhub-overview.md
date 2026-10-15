@@ -18,6 +18,7 @@ collection filter.
 - **Shareable filters.** Filters live in the URL, so they can be bookmarked and sent to a colleague.
 - **Redesigned interface.** Light and dark themes, a layout that works on a phone, typed cells, a column picker with saved presets,
   sorting from the column header, and click-a-row editing in a popup.
+- **Rows per page.** Pick 10, 25, 50, 100 or 250 in the toolbar; the choice is remembered. 25 by default.
 - **Friendlier behind a reverse proxy**, and a sign-in page that says when a password was wrong.
 
 ![The filter builder](https://raw.githubusercontent.com/Khuongnb/mongo-express-enhanced/e-master/docs/screenshots/filter.png)
@@ -78,6 +79,8 @@ Added by this fork:
 
 | Variable | Default | Description |
 | - | - | - |
+| `ME_CONFIG_DOCUMENTS_PER_PAGE` | `25` | Rows shown per page until someone picks another size in the toolbar (upstream's default is 10). |
+| `ME_CONFIG_ENHANCED_MAX_PER_PAGE` | `250` | The most rows a page can show. |
 | `ME_CONFIG_SITE_PROXY_STRIPS_BASEURL` | `false` | Your reverse proxy removes `ME_CONFIG_SITE_BASEURL` before forwarding to the app. |
 | `ME_CONFIG_ENHANCED_INJECT_ASSETS` | `true` | Inject the enhanced stylesheet and script into every page. Leave it on; it exists for debugging. |
 

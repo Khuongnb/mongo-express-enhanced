@@ -208,3 +208,7 @@ th:hover .me-sort-slot .sort-icon, th:focus-within .me-sort-slot .sort-icon { di
 .me-preset-chip:hover .me-preset-x, .me-preset-chip:focus-within .me-preset-x, .me-preset-x:focus-visible { opacity: 1; }
 .me-preset-x:hover { background: var(--me-danger); border-color: var(--me-danger); color: #fff; }
 @media (hover: none) { .me-preset-x { opacity: 1; } }
+
+/* ---------- R. Rows-per-page picker (toolbar of the collection page) ---------- */
+.me-per-page { display: inline-flex; align-items: center; gap: 6px; font-size: var(--me-fs-sm); color: var(--me-text-muted); white-space: nowrap; }
+.me-per-page .form-select { width: auto; height: 28px; padding: 0 28px 0 8px; font-size: var(--me-fs-sm); font-variant-numeric: tabular-nums; }
