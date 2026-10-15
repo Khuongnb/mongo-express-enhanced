@@ -1335,3 +1335,11 @@
 /* ---------- R. Rows-per-page picker (toolbar of the collection page) ---------- */
 [data-me-enhanced] .me-per-page { display: inline-flex; align-items: center; gap: 6px; font-size: var(--me-fs-sm); color: var(--me-text-muted); white-space: nowrap; }
 [data-me-enhanced] .me-per-page .form-select { width: auto; height: 28px; padding: 0 28px 0 8px; font-size: var(--me-fs-sm); font-variant-numeric: tabular-nums; }
+
+/* ---------- S. Sticky header row of the documents table ----------
+   `.me-table-scroll` scrolls sideways, which makes it the scroll container a sticky header sticks to, so the header only stays in
+   view if that container is the thing that scrolls up and down too: hence the height limit. Short pages never reach it. The _id
+   column is already sticky on the left; its header cell is the corner, above both. */
+[data-me-enhanced] .me-docs-card .me-table-scroll { max-height: calc(100vh - 140px); overflow-y: auto; }
+[data-me-enhanced] .me-docs-card .table-documents > thead > tr > th { position: sticky; top: 0; z-index: 3; }
+[data-me-enhanced] .me-docs-card .table-documents > thead > tr > th:first-child { left: 0; z-index: 4; }
