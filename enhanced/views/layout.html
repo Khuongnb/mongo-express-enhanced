@@ -6,8 +6,8 @@
    - public/css/style.css is not linked: the designed stylesheet (injected by the enhanced layer) supersedes it
    - the logout button shows for form sign-in too (upstream only does for OIDC)
    - the alerts sit in {% block flash %} so the sign-in page can show its message inside its own card
-   - the saved dark theme is applied by two tiny inline scripts before the page paints (see the comments on them), not only by upstream's
-     vendor script, which runs once it has downloaded and left the page light until then
+   - the saved dark theme is applied by three tiny inline scripts before the page paints (see the comments on them), not only by
+     upstream's vendor script, which runs once it has downloaded and left the page light until then
    Everything else, including ME_SETTINGS and the scripts block, is upstream's. #}
 <!DOCTYPE html>
 <html lang="en">
@@ -15,6 +15,23 @@
 <head>
   <base href="{{ baseHref }}">
   <meta charset="utf-8">
+  {# The page canvas is white until something gives it a colour, and until the stylesheets below have downloaded nothing does: that is
+     the white flash before a dark page. This runs before any of them is requested and paints the canvas dark from the first frame. The
+     observer drops it again once the theme is switched to light, so the canvas follows the body from then on (a dark `html` would
+     otherwise show behind a light body). #}
+  <style>html[data-me-dark] { background: #1f1633; color-scheme: dark; }</style>
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('bsTheme') !== 'dark') return;
+        var root = document.documentElement;
+        root.setAttribute('data-me-dark', '');
+        new MutationObserver(function () {
+          if (document.body && document.body.dataset.bsTheme === 'light') root.removeAttribute('data-me-dark');
+        }).observe(root, { subtree: true, attributes: true, attributeFilter: ['data-bs-theme'] });
+      } catch (error) { /* the body script and upstream's decide later */ }
+    })();
+  </script>
   <title>{% block title %}Index{% endblock %} - Mongo Express</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
