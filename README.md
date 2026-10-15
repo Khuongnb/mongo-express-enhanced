@@ -49,6 +49,8 @@ Every page is redesigned: light and dark themes, and a layout that holds up on a
 - **Sorting**: hover a column header for ascending and descending buttons; clicking the name still cycles ascending, descending, none.
 - **Rows per page**: a **Rows** picker (10, 25, 50, 100, 250) in the table toolbar, remembered in the browser for every collection.
   25 by default, where upstream shows 10. `?limit=100` in the address does the same for one visit.
+- **Collapse JSON**: objects and arrays start collapsed to one line, so a big value cannot stretch its row. A **Collapse JSON** switch in the
+  toolbar (shown when the page has a JSON value) unfolds them, and the choice is remembered in the browser.
 - **Copy an `_id`** with one click, jump to any page, and open a document in a new tab straight from the row.
 
 ### Editing a document without leaving the table
@@ -117,6 +119,7 @@ Settings added by this fork (everything else is upstream's, listed further down)
 | `ME_CONFIG_SITE_PROXY_STRIPS_BASEURL` | `false` | The reverse proxy in front of the app removes `ME_CONFIG_SITE_BASEURL` before forwarding. |
 | `ME_CONFIG_ENHANCED_INJECT_ASSETS` | `true` | Inject the enhanced stylesheet and script into every page. Leave it on; it exists for debugging. |
 | `ME_CONFIG_DOCUMENTS_PER_PAGE` | `25` | Rows shown per page until someone picks another size (upstream's default is 10). Upstream's own setting, with a new default here. |
+| `ME_CONFIG_ENHANCED_JSON_COLLAPSED` | `true` | Whether JSON values start collapsed, until someone turns the toolbar switch off. Needs `ME_CONFIG_OPTIONS_COLLAPSIBLE_JSON` (on by default). |
 | `ME_CONFIG_ENHANCED_MAX_PER_PAGE` | `250` | The most rows a page can show, whatever the picker, `?limit=` or a saved choice asks for. Never lower than the default above. |
 
 ## How the fork is built

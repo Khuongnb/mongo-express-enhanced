@@ -10,7 +10,7 @@ import { initListFilter } from './listFilter.js';
 import { initSigninPage } from './signinPage.js';
 import { initSortControls } from './sortControls.js';
 import {
-  initCopy, initDeleteCollectionGate, initNumbers, initPagination, initPerPage, initQueryUi, initRanges,
+  initCopy, initDeleteCollectionGate, initNumbers, initJsonToggle, initPagination, initPerPage, initQueryUi, initRanges,
 } from './tablePage.js';
 
 // Lazy chunks (the code editor) sit next to this file, whatever the base URL or proxy prefix in front of the app is.
@@ -41,4 +41,5 @@ ready(() => {
   initColumnPicker({ db: ME_SETTINGS.dbName, collection: ME_SETTINGS.collectionName });
   // After upstream's jQuery-ready handlers, which render the paginator plugin into the same elements.
   setTimeout(initPagination, 0);
+  setTimeout(initJsonToggle, 0);
 });

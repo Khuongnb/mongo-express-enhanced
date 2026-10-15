@@ -70,23 +70,40 @@ export const initPagination = () => {
   });
 };
 
-const PER_PAGE_COOKIE = 'me_per_page';
 const YEAR = 60 * 60 * 24 * 365;
 
-// The picker remembers the size in a cookie the server reads (so no redirect, and the same size on every collection), then reloads
-// without `limit` in the URL, which would otherwise win over the cookie, and from the first page, since the old offset means nothing.
+// Choices the server reads on the next request, so the page reloads instead of redirecting, and every collection shares them.
+const rememberChoice = (name, value) => {
+  const secure = globalThis.location.protocol === 'https:' ? '; Secure' : '';
+  // eslint-disable-next-line unicorn/no-document-cookie -- the server reads this cookie; the Cookie Store API is not in every supported browser
+  document.cookie = `${name}=${value}; Path=${ME_SETTINGS.baseHref || '/'}; Max-Age=${YEAR}; SameSite=Lax${secure}`;
+};
+
+// Reloads without `limit` in the URL, which would otherwise win over the cookie, and from the first page, since the old offset means nothing.
 export const initPerPage = () => {
   const select = document.querySelector('[data-me-per-page]');
   if (!select) return;
   select.addEventListener('change', () => {
-    const secure = globalThis.location.protocol === 'https:' ? '; Secure' : '';
-    // eslint-disable-next-line unicorn/no-document-cookie -- the server reads this cookie; the Cookie Store API is not in every supported browser
-    document.cookie = `${PER_PAGE_COOKIE}=${select.value}; Path=${ME_SETTINGS.baseHref || '/'}; Max-Age=${YEAR}; SameSite=Lax${secure}`;
+    rememberChoice('me_per_page', select.value);
     const params = new URLSearchParams(globalThis.location.search);
     params.delete('limit');
     params.delete('skip');
     const query = params.toString();
     globalThis.location.assign(`${globalThis.location.pathname}${query ? `?${query}` : ''}`);
+  });
+};
+
+// "Collapse JSON": the server renders every object collapsed or unfolded from this choice. Hidden until a JSON value is on the page,
+// since a collection without any has nothing to collapse.
+export const initJsonToggle = () => {
+  const label = document.querySelector('[data-me-json-switch]');
+  if (!label) return;
+  // upstream's script has already replaced each object's <pre> with its tree by now (see enhanced.js)
+  if (!document.querySelector('div.tableContent .renderjson')) return;
+  label.hidden = false;
+  label.querySelector('[data-me-json-toggle]').addEventListener('change', (event) => {
+    rememberChoice('me_json_collapsed', event.target.checked ? '1' : '0');
+    globalThis.location.reload();
   });
 };
 

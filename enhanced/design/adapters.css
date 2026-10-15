@@ -220,3 +220,8 @@ th:hover .me-sort-slot .sort-icon, th:focus-within .me-sort-slot .sort-icon { di
 .me-docs-card .me-table-scroll { max-height: calc(100vh - 140px); overflow-y: auto; }
 .me-docs-card .table-documents > thead > tr > th { position: sticky; top: 0; z-index: 3; }
 .me-docs-card .table-documents > thead > tr > th:first-child { left: 0; z-index: 4; }
+
+/* ---------- T. Collapse-JSON switch (toolbar of the collection page) ---------- */
+.me-json-switch { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: var(--me-fs-sm); color: var(--me-text-muted); white-space: nowrap; cursor: pointer; }
+.me-json-switch[hidden] { display: none; }
+.me-json-switch .form-check-input { margin: 0; cursor: pointer; }

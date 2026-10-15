@@ -8,6 +8,7 @@ import { ASSETS_MOUNT, resolveEnhancedConfig } from './config.js';
 import { registerColumnTypes } from './features/columnTypes.js';
 import formAuthPaths from './features/formAuthPaths.js';
 import injectAssets from './features/injectAssets.js';
+import jsonView from './features/jsonView.js';
 import perPage from './features/perPage.js';
 import queryFilter from './features/queryFilter.js';
 import signinFlash from './features/signinFlash.js';
@@ -67,6 +68,8 @@ export default async function createEnhancedApp(config) {
   // Also before upstream: the page size is chosen per request (?limit=, the picker's cookie, the default), through a getter it
   // installs on config.options.documentsPerPage.
   app.use(baseUrl, perPage(config, enhanced));
+  // JSON values start collapsed unless the toggle's cookie says otherwise; handed to the page as the unfold level upstream's script reads.
+  app.use(baseUrl, jsonView(config, enhanced));
 
   registerValueFilters();
   registerColumnTypes();
