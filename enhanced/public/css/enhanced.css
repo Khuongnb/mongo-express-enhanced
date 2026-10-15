@@ -1348,3 +1348,8 @@
 [data-me-enhanced] .me-json-switch { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: var(--me-fs-sm); color: var(--me-text-muted); white-space: nowrap; cursor: pointer; }
 [data-me-enhanced] .me-json-switch[hidden] { display: none; }
 [data-me-enhanced] .me-json-switch .form-check-input { margin: 0; cursor: pointer; }
+
+/* ---------- U. No bottom margin under a JSON value ----------
+   Upstream renders an object as a <pre>, and Bootstrap gives every <pre> margin-bottom: 1rem. In a table cell that is 16px of
+   empty space under a one-line value: a 50px row where a plain one is 34px. */
+[data-me-enhanced] .tableContent pre { margin: 0; }

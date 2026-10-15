@@ -55,6 +55,11 @@ describe('enhanced css scoping', () => {
       expect(css).to.not.contain('Component-sheet scaffolding');
     });
 
+    it('leaves no margin under a JSON value, which is a <pre> that Bootstrap gives margin-bottom: 1rem', () => {
+      const pre = declarations('[data-me-enhanced] .tableContent pre');
+      expect(pre.margin).to.equal('0');
+    });
+
     it('keeps the documents table header in view while its rows scroll', () => {
       // sticks to the container that scrolls sideways, so that container must also be what scrolls up and down
       const scroller = declarations('[data-me-enhanced] .me-docs-card .me-table-scroll');
