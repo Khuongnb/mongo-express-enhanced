@@ -6,8 +6,8 @@
    - public/css/style.css is not linked: the designed stylesheet (injected by the enhanced layer) supersedes it
    - the logout button shows for form sign-in too (upstream only does for OIDC)
    - the alerts sit in {% block flash %} so the sign-in page can show its message inside its own card
-   - the saved dark theme is applied by three tiny inline scripts before the page paints (see the comments on them), not only by
-     upstream's vendor script, which runs once it has downloaded and left the page light until then
+   - dark is the default theme (upstream's is light): the page is dark unless the saved choice is 'light'. Three tiny inline scripts
+     apply it before the page paints (see the comments on them); upstream's vendor script would only do so once it has downloaded
    Everything else, including ME_SETTINGS and the scripts block, is upstream's. #}
 <!DOCTYPE html>
 <html lang="en">
@@ -15,21 +15,22 @@
 <head>
   <base href="{{ baseHref }}">
   <meta charset="utf-8">
-  {# The page canvas is white until something gives it a colour, and until the stylesheets below have downloaded nothing does: that is
-     the white flash before a dark page. This runs before any of them is requested and paints the canvas dark from the first frame. The
-     observer drops it again once the theme is switched to light, so the canvas follows the body from then on (a dark `html` would
-     otherwise show behind a light body). #}
+  {# Dark is the default theme: the page is dark unless the saved choice is 'light' (the toggle saves 'light' or 'dark'; nothing is saved
+     until it is used). The page canvas is white until something gives it a colour, and until the stylesheets below have downloaded
+     nothing does: that is the white flash before a dark page. This runs before any of them is requested and paints the canvas dark
+     from the first frame. The observer drops it again once the theme is switched to light, so the canvas follows the body from then
+     on (a dark `html` would otherwise show behind a light body). If storage cannot be read, nothing is saved, so dark applies. #}
   <style>html[data-me-dark] { background: #1f1633; color-scheme: dark; }</style>
   <script>
     (function () {
-      try {
-        if (localStorage.getItem('bsTheme') !== 'dark') return;
-        var root = document.documentElement;
-        root.setAttribute('data-me-dark', '');
-        new MutationObserver(function () {
-          if (document.body && document.body.dataset.bsTheme === 'light') root.removeAttribute('data-me-dark');
-        }).observe(root, { subtree: true, attributes: true, attributeFilter: ['data-bs-theme'] });
-      } catch (error) { /* the body script and upstream's decide later */ }
+      var saved = null;
+      try { saved = localStorage.getItem('bsTheme'); } catch (error) { /* no saved choice: the default applies */ }
+      if (saved === 'light') return;
+      var root = document.documentElement;
+      root.setAttribute('data-me-dark', '');
+      new MutationObserver(function () {
+        if (document.body && document.body.dataset.bsTheme === 'light') root.removeAttribute('data-me-dark');
+      }).observe(root, { subtree: true, attributes: true, attributeFilter: ['data-bs-theme'] });
     })();
   </script>
   <title>{% block title %}Index{% endblock %} - Mongo Express</title>
@@ -48,15 +49,17 @@
 
 <body class="me-app">
 
-{# Applies the saved dark theme before anything is painted. Upstream's vendor script does it too, but only once it has downloaded and the
-    document is ready, so the page showed light until then. That script flips the theme from whatever the body already has, and only
-    when storage says 'dark': so after setting the body here, storage must not say 'dark' to it once. This hides the value from its
-    first read only, then restores the real getItem. If storage is unavailable, upstream's script decides later, as before. #}
+{# Applies the dark theme before anything is painted, unless the saved choice is 'light'. Upstream's vendor script knows only the saved
+    'dark' (which it applies once it has downloaded and the document is ready, so the page showed light until then) and flips the
+    theme from whatever the body already has. So after setting the body here, storage must not say 'dark' to it: this hides the value
+    from its first read only, then restores the real getItem. #}
 <script>
   (function () {
+    var saved = null;
+    try { saved = localStorage.getItem('bsTheme'); } catch (error) { /* no saved choice: the default applies */ }
+    if (saved === 'light') return;
+    document.body.dataset.bsTheme = 'dark';
     try {
-      if (localStorage.getItem('bsTheme') !== 'dark') return;
-      document.body.dataset.bsTheme = 'dark';
       var read = Storage.prototype.getItem;
       Storage.prototype.getItem = function (key) {
         if (this === localStorage && key === 'bsTheme') {
@@ -65,7 +68,7 @@
         }
         return read.apply(this, arguments);
       };
-    } catch (error) { /* upstream's script applies the theme later */ }
+    } catch (error) { /* upstream's own script then decides, as before */ }
   })();
 </script>
 

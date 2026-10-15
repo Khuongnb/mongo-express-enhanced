@@ -16,7 +16,7 @@ collection filter.
 - **Safe by design.** The table, count, exports and *Delete all matching* all use the same filter. A filter that cannot be read stops the
   action instead of being ignored, so a typo can never turn "delete matching" into "delete everything".
 - **Shareable filters.** Filters live in the URL, so they can be bookmarked and sent to a colleague.
-- **Redesigned interface.** Light and dark themes, a layout that works on a phone, typed cells, a column picker with saved presets,
+- **Redesigned interface.** Light and dark themes (dark by default), a layout that works on a phone, typed cells, a column picker with saved presets,
   sorting from the column header, and click-a-row editing in a popup.
 - **Collapse JSON.** Objects and arrays start collapsed to one line so a big value cannot stretch a row; a toolbar switch unfolds them.
 - **Rows per page.** Pick 10, 25, 50, 100 or 250 in the toolbar; the choice is remembered. 25 by default.

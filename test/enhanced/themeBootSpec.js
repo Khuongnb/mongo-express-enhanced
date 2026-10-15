@@ -75,16 +75,19 @@ describe('enhanced dark theme before first paint', () => {
     expect(navbar).to.be.lessThan(html.indexOf('/vendor'));
   });
 
-  it('paints the canvas dark from the head script when the saved theme is dark, and not otherwise', () => {
-    const dark = boot({ stored: 'dark' });
-    dark.run(scripts[0]);
-    expect(dark.attributes.has('data-me-dark')).to.equal(true);
-    for (const stored of [null, 'light']) {
+  // dark is the default: only a saved 'light' keeps the page light
+  const DARK_BY = [['dark', 'saved dark'], [null, 'nothing saved'], ['blue', 'an unknown value'], ['', 'an empty value']];
+
+  it('paints the canvas dark from the head script by default, and not when the saved choice is light', () => {
+    for (const [stored, why] of DARK_BY) {
       const page = boot({ stored });
       page.run(scripts[0]);
-      expect(page.attributes.size, String(stored)).to.equal(0);
-      expect(page.observers).to.have.length(0);
+      expect(page.attributes.has('data-me-dark'), why).to.equal(true);
     }
+    const light = boot({ stored: 'light' });
+    light.run(scripts[0]);
+    expect(light.attributes.size).to.equal(0);
+    expect(light.observers).to.have.length(0);
   });
 
   it('gives the canvas back to the body once the theme is switched to light', () => {
@@ -103,31 +106,33 @@ describe('enhanced dark theme before first paint', () => {
     expect(page.attributes.has('data-me-dark')).to.equal(false);
   });
 
-  it('leaves the canvas alone when storage cannot be read', () => {
-    const page = boot({ stored: 'dark' });
+  it('still defaults to dark when storage cannot be read, since nothing can be saved', () => {
+    const page = boot({ stored: 'light' });
     page.Storage.prototype.getItem = () => { throw new Error('denied'); };
     expect(() => page.run(scripts[0])).to.not.throw();
-    expect(page.attributes.size).to.equal(0);
+    expect(page.attributes.has('data-me-dark')).to.equal(true);
+    expect(() => page.run(scripts[1])).to.not.throw();
+    expect(page.body.dataset.bsTheme).to.equal('dark');
   });
 
-  it('does nothing when the saved theme is not dark', () => {
-    for (const stored of [null, 'light', 'blue']) {
+  it('stays light, in the body, the icon and the navbar, when the saved choice is light', () => {
+    const page = boot({ stored: 'light' });
+    page.run(scripts[1]);
+    page.run(scripts[2]);
+    expect(page.body.dataset.bsTheme).to.equal(undefined);
+    expect(page.icon.classList.names.has('fa-moon')).to.equal(true);
+    expect(page.nav.classList.names.has('bg-light')).to.equal(true);
+  });
+
+  it('sets the body, the icon and the navbar to dark by default', () => {
+    for (const [stored, why] of DARK_BY) {
       const page = boot({ stored });
       page.run(scripts[1]);
+      expect(page.body.dataset.bsTheme, why).to.equal('dark');
       page.run(scripts[2]);
-      expect(page.body.dataset.bsTheme, String(stored)).to.equal(undefined);
-      expect(page.icon.classList.names.has('fa-moon')).to.equal(true);
-      expect(page.nav.classList.names.has('bg-light')).to.equal(true);
+      expect([...page.icon.classList.names].sort(), why).to.deep.equal(['fa', 'fa-sun']);
+      expect([...page.nav.classList.names].sort(), why).to.deep.equal(['bg-dark', 'navbar-dark']);
     }
-  });
-
-  it('sets the body, the icon and the navbar to dark when the saved theme is dark', () => {
-    const page = boot({ stored: 'dark' });
-    page.run(scripts[1]);
-    expect(page.body.dataset.bsTheme).to.equal('dark');
-    page.run(scripts[2]);
-    expect([...page.icon.classList.names].sort()).to.deep.equal(['fa', 'fa-sun']);
-    expect([...page.nav.classList.names].sort()).to.deep.equal(['bg-dark', 'navbar-dark']);
   });
 
   it('hides "dark" from upstream\'s first read only, so its flip does not undo the theme, then reads for real again', () => {
@@ -143,10 +148,4 @@ describe('enhanced dark theme before first paint', () => {
     expect(page.localStorage.getItem('bsTheme')).to.equal('dark');
   });
 
-  it('leaves the page to upstream\'s script when storage cannot be read', () => {
-    const page = boot({ stored: 'dark' });
-    page.Storage.prototype.getItem = () => { throw new Error('denied'); };
-    expect(() => page.run(scripts[1])).to.not.throw();
-    expect(page.body.dataset.bsTheme).to.equal(undefined);
-  });
 });

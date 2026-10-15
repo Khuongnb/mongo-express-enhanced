@@ -33,7 +33,7 @@ The Simple query used to be one key, one value, equality only. Anything more mea
 
 ### A redesigned interface
 
-Every page is redesigned: light and dark themes, and a layout that holds up on a phone.
+Every page is redesigned: light and dark themes (dark by default, switched with the button in the navbar and remembered in the browser), and a layout that holds up on a phone.
 
 | | |
 | - | - |
